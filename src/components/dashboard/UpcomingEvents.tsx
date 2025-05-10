@@ -1,7 +1,7 @@
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Calendar, Check, ArrowRight, User, Pill, Stethoscope } from "lucide-react";
+import { Calendar, Check, ArrowRight, User, Pill, Stethoscope, TestTube } from "lucide-react";
 import { Link } from "react-router-dom";
 
 export const UpcomingEvents = () => {
@@ -80,7 +80,7 @@ export const UpcomingEvents = () => {
             + Appointment
           </Button>
           <Button variant="outline" size="sm" className="text-xs h-8">
-            <Flask className="h-3 w-3 mr-1" />
+            <TestTube className="h-3 w-3 mr-1" />
             + Screening
           </Button>
         </div>
