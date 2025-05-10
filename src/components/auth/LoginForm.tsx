@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useAuth } from "@/context/AuthContext";
 import { toast } from "@/components/ui/use-toast";
+import { Loader2 } from "lucide-react";
 
 export const LoginForm = () => {
   const [email, setEmail] = useState("");
@@ -20,11 +21,7 @@ export const LoginForm = () => {
     setIsSubmitting(true);
     
     try {
-      // Simulate login success
-      toast({
-        title: "Welcome back!",
-        description: "You've been successfully logged in.",
-      });
+      await login(email, password);
       navigate("/dashboard");
     } catch (error) {
       toast({
@@ -37,15 +34,21 @@ export const LoginForm = () => {
     }
   };
 
-  const handleDummyLogin = () => {
+  const handleDummyLogin = async () => {
     setIsSubmitting(true);
-    toast({
-      title: "Welcome back!",
-      description: "You've been logged in with a demo account.",
-    });
-    setTimeout(() => {
+    
+    try {
+      await login(); // Call login with no parameters to use demo credentials
       navigate("/dashboard");
-    }, 1000);
+    } catch (error) {
+      toast({
+        title: "Demo Login Failed",
+        description: "There was an error logging in with the demo account.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
   
   return (
@@ -88,7 +91,12 @@ export const LoginForm = () => {
           className="w-full bg-herhealth-pink-dark hover:bg-herhealth-pink text-white"
           disabled={isSubmitting}
         >
-          {isSubmitting ? "Signing in..." : "Sign In"}
+          {isSubmitting ? (
+            <>
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              Signing in...
+            </>
+          ) : "Sign In"}
         </Button>
 
         <div className="relative">
@@ -107,7 +115,12 @@ export const LoginForm = () => {
           onClick={handleDummyLogin}
           disabled={isSubmitting}
         >
-          Demo Login (No Credentials)
+          {isSubmitting ? (
+            <>
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              Logging in...
+            </>
+          ) : "Demo Login (No Credentials)"}
         </Button>
         
         <div className="text-center mt-4">
