@@ -1,0 +1,137 @@
+
+import { useState } from "react";
+import { Link } from "react-router-dom";
+import { Button } from "@/components/ui/button";
+import { useAuth } from "@/context/AuthContext";
+import { Menu, X, User, Calendar, Activity, Brain, Heart, History, LogOut } from "lucide-react";
+
+export const Navbar = () => {
+  const { user, logout } = useAuth();
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  
+  const toggleMenu = () => setIsMenuOpen(!isMenuOpen);
+  
+  return (
+    <nav className="bg-white border-b border-gray-100 sticky top-0 z-50">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="flex justify-between h-16">
+          <div className="flex items-center">
+            <Link to="/" className="flex-shrink-0 flex items-center">
+              <span className="text-2xl font-bold text-herhealth-pink-dark">Her</span>
+              <span className="text-2xl font-bold text-herhealth-green-dark">Health</span>
+            </Link>
+          </div>
+          
+          {user ? (
+            <>
+              {/* Desktop navigation */}
+              <div className="hidden md:flex md:items-center md:ml-6 space-x-4">
+                <Link to="/dashboard" className="px-3 py-2 rounded-md text-sm font-medium hover:bg-herhealth-pink-light transition-colors">
+                  Dashboard
+                </Link>
+                <Link to="/cycle" className="px-3 py-2 rounded-md text-sm font-medium hover:bg-herhealth-pink-light transition-colors">
+                  Cycle Tracker
+                </Link>
+                <Link to="/wellness" className="px-3 py-2 rounded-md text-sm font-medium hover:bg-herhealth-pink-light transition-colors">
+                  Wellness Hub
+                </Link>
+                <Link to="/mental-health" className="px-3 py-2 rounded-md text-sm font-medium hover:bg-herhealth-pink-light transition-colors">
+                  Mental Health
+                </Link>
+                
+                <div className="ml-3 relative">
+                  <Button 
+                    variant="ghost" 
+                    className="flex items-center gap-2 hover:bg-herhealth-pink-light"
+                    onClick={logout}
+                  >
+                    <LogOut className="h-4 w-4" />
+                    <span>Logout</span>
+                  </Button>
+                </div>
+              </div>
+              
+              {/* Mobile menu button */}
+              <div className="flex items-center md:hidden">
+                <button
+                  className="p-2 rounded-md text-gray-600 hover:text-gray-900 hover:bg-gray-100"
+                  onClick={toggleMenu}
+                >
+                  <span className="sr-only">Open main menu</span>
+                  {isMenuOpen ? (
+                    <X className="block h-6 w-6" />
+                  ) : (
+                    <Menu className="block h-6 w-6" />
+                  )}
+                </button>
+              </div>
+            </>
+          ) : (
+            <div className="flex items-center space-x-4">
+              <Link to="/login">
+                <Button variant="ghost" className="text-herhealth-pink-dark hover:bg-herhealth-pink-light">
+                  Login
+                </Button>
+              </Link>
+              <Link to="/signup">
+                <Button className="bg-herhealth-pink-dark hover:bg-herhealth-pink text-white">
+                  Sign Up
+                </Button>
+              </Link>
+            </div>
+          )}
+        </div>
+      </div>
+      
+      {/* Mobile menu, show/hide based on menu state */}
+      {user && isMenuOpen && (
+        <div className="md:hidden bg-white shadow-lg rounded-b-lg">
+          <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3">
+            <Link
+              to="/dashboard"
+              className="block px-3 py-2 rounded-md text-base font-medium hover:bg-herhealth-pink-light flex items-center gap-3"
+              onClick={() => setIsMenuOpen(false)}
+            >
+              <User className="h-5 w-5" />
+              Dashboard
+            </Link>
+            <Link
+              to="/cycle"
+              className="block px-3 py-2 rounded-md text-base font-medium hover:bg-herhealth-pink-light flex items-center gap-3"
+              onClick={() => setIsMenuOpen(false)}
+            >
+              <Calendar className="h-5 w-5" />
+              Cycle Tracker
+            </Link>
+            <Link
+              to="/wellness"
+              className="block px-3 py-2 rounded-md text-base font-medium hover:bg-herhealth-pink-light flex items-center gap-3"
+              onClick={() => setIsMenuOpen(false)}
+            >
+              <Activity className="h-5 w-5" />
+              Wellness Hub
+            </Link>
+            <Link
+              to="/mental-health"
+              className="block px-3 py-2 rounded-md text-base font-medium hover:bg-herhealth-pink-light flex items-center gap-3"
+              onClick={() => setIsMenuOpen(false)}
+            >
+              <Brain className="h-5 w-5" />
+              Mental Health
+            </Link>
+            <button
+              className="w-full text-left block px-3 py-2 rounded-md text-base font-medium hover:bg-herhealth-pink-light flex items-center gap-3"
+              onClick={() => {
+                logout();
+                setIsMenuOpen(false);
+              }}
+            >
+              <LogOut className="h-5 w-5" />
+              Logout
+            </button>
+          </div>
+        </div>
+      )}
+    </nav>
+  );
+};
