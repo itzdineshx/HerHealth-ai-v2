@@ -8,7 +8,7 @@ interface AuthContextType {
   user: User | null;
   isLoading: boolean;
   isAuthenticated: boolean;
-  login: (email: string, password: string) => Promise<void>;
+  login: (email?: string, password?: string) => Promise<void>;
   register: (
     name: string,
     email: string,
@@ -36,29 +36,30 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (event, session) => {
-        if (session && session.user) {
-          fetchUserProfile(session.user.id);
-        } else {
-          setUser(null);
-          setIsLoading(false);
-        }
-      }
-    );
-
-    // Check for existing session
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      if (session && session.user) {
-        fetchUserProfile(session.user.id);
-      } else {
-        setIsLoading(false);
-      }
-    });
-
-    return () => {
-      subscription.unsubscribe();
+    // For development purposes, we'll create a dummy user
+    const dummyUser: User = {
+      id: "dummy-user-id",
+      name: "Sarah Johnson",
+      email: "sarah@example.com",
+      dob: "1990-05-15",
+      lifeStage: "adult",
+      location: "New York, NY",
+      privacyPreferences: {
+        dataSharing: true,
+        marketingEmails: false,
+        researchParticipation: true,
+      },
+      createdAt: new Date().toISOString(),
     };
+    
+    // Check if we have a stored user
+    const storedUser = localStorage.getItem("herhealth_user");
+    
+    if (storedUser) {
+      setUser(JSON.parse(storedUser));
+    }
+    
+    setIsLoading(false);
   }, []);
 
   const fetchUserProfile = async (userId: string) => {
@@ -96,25 +97,42 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
-  const login = async (email: string, password: string) => {
+  const login = async (email?: string, password?: string) => {
     setIsLoading(true);
     try {
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email,
-        password,
+      // Create dummy user
+      const dummyUser: User = {
+        id: "dummy-user-id",
+        name: "Sarah Johnson",
+        email: "sarah@example.com",
+        dob: "1990-05-15",
+        lifeStage: "adult",
+        location: "New York, NY",
+        privacyPreferences: {
+          dataSharing: true,
+          marketingEmails: false,
+          researchParticipation: true,
+        },
+        createdAt: new Date().toISOString(),
+      };
+      
+      // Set the dummy user
+      setUser(dummyUser);
+      
+      // Store user in localStorage
+      localStorage.setItem("herhealth_user", JSON.stringify(dummyUser));
+      
+      toast({
+        title: "Login Successful",
+        description: "You've been logged in with a demo account.",
       });
-
-      if (error) throw error;
-
-      if (data.user) {
-        fetchUserProfile(data.user.id);
-      }
     } catch (error: any) {
       toast({
         title: "Login Failed",
         description: error.message || "Please check your credentials and try again.",
         variant: "destructive",
       });
+    } finally {
       setIsLoading(false);
     }
   };
@@ -129,43 +147,50 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   ) => {
     setIsLoading(true);
     try {
-      // Register the user with Supabase Auth
-      const { data, error } = await supabase.auth.signUp({
-        email,
-        password,
-        options: {
-          data: {
-            name,
-            dob,
-            life_stage: lifeStage,
-            location,
-          },
+      // Create dummy user
+      const dummyUser: User = {
+        id: "dummy-user-id",
+        name: name,
+        email: email,
+        dob: dob,
+        lifeStage: lifeStage,
+        location: location,
+        privacyPreferences: {
+          dataSharing: true,
+          marketingEmails: false,
+          researchParticipation: true,
         },
+        createdAt: new Date().toISOString(),
+      };
+      
+      // Set the dummy user
+      setUser(dummyUser);
+      
+      // Store user in localStorage
+      localStorage.setItem("herhealth_user", JSON.stringify(dummyUser));
+      
+      toast({
+        title: "Account created!",
+        description: "Welcome to HerHealth! Your wellness journey begins now.",
       });
-
-      if (error) throw error;
-
-      if (data.user) {
-        // Trigger functions will create the profile
-        toast({
-          title: "Account created!",
-          description: "Welcome to HerHealth! Your wellness journey begins now.",
-        });
-      }
     } catch (error: any) {
       toast({
         title: "Registration Failed",
         description: error.message || "There was an error creating your account. Please try again.",
         variant: "destructive",
       });
+    } finally {
       setIsLoading(false);
     }
   };
 
   const logout = async () => {
     try {
-      await supabase.auth.signOut();
+      // Clear user from state
       setUser(null);
+      
+      // Remove from localStorage
+      localStorage.removeItem("herhealth_user");
       
       toast({
         title: "Logged out",

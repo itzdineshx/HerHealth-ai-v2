@@ -18,6 +18,7 @@ import WellnessHubPage from "./pages/WellnessHubPage";
 import MentalHealthPage from "./pages/MentalHealthPage";
 import PregnancyPage from "./pages/PregnancyPage";
 import MenopausePage from "./pages/MenopausePage";
+import TermsPage from "./pages/TermsPage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -41,6 +42,7 @@ const App: React.FC = () => (
               <Route path="/mental-health" element={<MentalHealthPage />} />
               <Route path="/pregnancy" element={<PregnancyPage />} />
               <Route path="/menopause" element={<MenopausePage />} />
+              <Route path="/terms" element={<TermsPage />} />
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />
             </Routes>

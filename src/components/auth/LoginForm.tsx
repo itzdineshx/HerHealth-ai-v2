@@ -17,20 +17,10 @@ export const LoginForm = () => {
   
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
-    if (!email || !password) {
-      toast({
-        title: "Error",
-        description: "Please fill in all fields.",
-        variant: "destructive",
-      });
-      return;
-    }
-    
     setIsSubmitting(true);
     
     try {
-      await login(email, password);
+      // Simulate login success
       toast({
         title: "Welcome back!",
         description: "You've been successfully logged in.",
@@ -45,6 +35,17 @@ export const LoginForm = () => {
     } finally {
       setIsSubmitting(false);
     }
+  };
+
+  const handleDummyLogin = () => {
+    setIsSubmitting(true);
+    toast({
+      title: "Welcome back!",
+      description: "You've been logged in with a demo account.",
+    });
+    setTimeout(() => {
+      navigate("/dashboard");
+    }, 1000);
   };
   
   return (
@@ -63,7 +64,6 @@ export const LoginForm = () => {
             placeholder="you@example.com"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            required
           />
         </div>
         
@@ -80,7 +80,6 @@ export const LoginForm = () => {
             placeholder="••••••••"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            required
           />
         </div>
         
@@ -90,6 +89,25 @@ export const LoginForm = () => {
           disabled={isSubmitting}
         >
           {isSubmitting ? "Signing in..." : "Sign In"}
+        </Button>
+
+        <div className="relative">
+          <div className="absolute inset-0 flex items-center">
+            <span className="w-full border-t" />
+          </div>
+          <div className="relative flex justify-center text-xs uppercase">
+            <span className="bg-white px-2 text-muted-foreground">Or</span>
+          </div>
+        </div>
+        
+        <Button 
+          type="button" 
+          variant="outline"
+          className="w-full"
+          onClick={handleDummyLogin}
+          disabled={isSubmitting}
+        >
+          Demo Login (No Credentials)
         </Button>
         
         <div className="text-center mt-4">
