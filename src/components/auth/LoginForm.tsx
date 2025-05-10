@@ -18,6 +18,15 @@ export const LoginForm = () => {
   
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!email || !password) {
+      toast({
+        title: "Please fill in all fields",
+        description: "Email and password are required",
+        variant: "destructive",
+      });
+      return;
+    }
+    
     setIsSubmitting(true);
     
     try {
@@ -39,6 +48,10 @@ export const LoginForm = () => {
     
     try {
       await login(); // Call login with no parameters to use demo credentials
+      toast({
+        title: "Demo Login Successful",
+        description: "You are now logged in with a demo account.",
+      });
       navigate("/dashboard");
     } catch (error) {
       toast({

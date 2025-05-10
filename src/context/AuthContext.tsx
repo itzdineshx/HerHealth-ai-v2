@@ -3,6 +3,7 @@ import { createContext, useContext, useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { User, LifeStage } from "@/types";
 import { toast } from "@/components/ui/use-toast";
+import { v4 as uuidv4 } from "uuid";
 
 interface AuthContextType {
   user: User | null;
@@ -36,22 +37,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    // For development purposes, we'll create a dummy user
-    const dummyUser: User = {
-      id: "dummy-user-id",
-      name: "Sarah Johnson",
-      email: "sarah@example.com",
-      dob: "1990-05-15",
-      lifeStage: "adult",
-      location: "New York, NY",
-      privacyPreferences: {
-        dataSharing: true,
-        marketingEmails: false,
-        researchParticipation: true,
-      },
-      createdAt: new Date().toISOString(),
-    };
-    
     // Check if we have a stored user
     const storedUser = localStorage.getItem("herhealth_user");
     
@@ -100,9 +85,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const login = async (email?: string, password?: string) => {
     setIsLoading(true);
     try {
-      // Create dummy user
+      // Create dummy user with proper UUID format
       const dummyUser: User = {
-        id: "dummy-user-id",
+        id: uuidv4(),
         name: "Sarah Johnson",
         email: "sarah@example.com",
         dob: "1990-05-15",
@@ -147,9 +132,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   ) => {
     setIsLoading(true);
     try {
-      // Create dummy user
+      // Create dummy user with proper UUID format
       const dummyUser: User = {
-        id: "dummy-user-id",
+        id: uuidv4(),
         name: name,
         email: email,
         dob: dob,
