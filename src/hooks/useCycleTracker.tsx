@@ -1,135 +1,217 @@
 
 import { useState, useEffect } from "react";
-import { CycleLog, SymptomLog } from "@/types";
 import { useAuth } from "@/context/AuthContext";
+import { toast } from "@/components/ui/use-toast";
+
+interface CycleEntry {
+  id: string;
+  userId: string;
+  startDate: string;
+  flowIntensity: "spotting" | "light" | "medium" | "heavy";
+  notes?: string;
+  createdAt: string;
+}
+
+interface SymptomEntry {
+  id: string;
+  userId: string;
+  date: string;
+  type: string;
+  intensity: number;
+  notes?: string;
+  createdAt: string;
+}
 
 export const useCycleTracker = () => {
   const { user } = useAuth();
-  const [cycleHistory, setCycleHistory] = useState<CycleLog[]>([]);
-  const [symptoms, setSymptoms] = useState<SymptomLog[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const [cycles, setCycles] = useState<CycleEntry[]>([]);
+  const [symptoms, setSymptoms] = useState<SymptomEntry[]>([]);
+  const [isLoadingCycles, setIsLoadingCycles] = useState(true);
+  const [isLoadingSymptoms, setIsLoadingSymptoms] = useState(true);
   
   useEffect(() => {
-    if (!user) {
-      setIsLoading(false);
-      return;
-    }
+    if (!user) return;
     
-    const loadCycleData = () => {
-      // This would be an API call in a real application
-      // For now, we'll load mock data from localStorage or create it if it doesn't exist
-      const storedCycles = localStorage.getItem(`herhealth_cycles_${user.id}`);
-      const storedSymptoms = localStorage.getItem(`herhealth_symptoms_${user.id}`);
-      
-      if (storedCycles) {
-        setCycleHistory(JSON.parse(storedCycles));
-      } else {
-        // Generate some mock data
-        const mockCycles: CycleLog[] = generateMockCycles(user.id);
-        localStorage.setItem(`herhealth_cycles_${user.id}`, JSON.stringify(mockCycles));
-        setCycleHistory(mockCycles);
+    // In a real app, this would fetch from a database
+    // For now, we'll use mock data
+    const fetchCycleData = async () => {
+      setIsLoadingCycles(true);
+      try {
+        // Mock API call delay
+        await new Promise(resolve => setTimeout(resolve, 500));
+        
+        // Mock data
+        const mockCycles: CycleEntry[] = [
+          {
+            id: "1",
+            userId: user.id,
+            startDate: "2025-04-17",
+            flowIntensity: "medium",
+            notes: "Normal cycle",
+            createdAt: "2025-04-17T08:30:00Z"
+          },
+          {
+            id: "2",
+            userId: user.id,
+            startDate: "2025-03-20",
+            flowIntensity: "heavy",
+            notes: "Heavier than usual",
+            createdAt: "2025-03-20T09:15:00Z"
+          },
+          {
+            id: "3",
+            userId: user.id,
+            startDate: "2025-02-19",
+            flowIntensity: "medium",
+            createdAt: "2025-02-19T10:00:00Z"
+          }
+        ];
+        
+        setCycles(mockCycles);
+      } catch (error) {
+        toast({
+          title: "Error fetching cycle data",
+          description: "Please try again later.",
+          variant: "destructive",
+        });
+        console.error("Error fetching cycle data:", error);
+      } finally {
+        setIsLoadingCycles(false);
       }
-      
-      if (storedSymptoms) {
-        setSymptoms(JSON.parse(storedSymptoms));
-      } else {
-        // Generate some mock data
-        const mockSymptoms: SymptomLog[] = generateMockSymptoms(user.id);
-        localStorage.setItem(`herhealth_symptoms_${user.id}`, JSON.stringify(mockSymptoms));
-        setSymptoms(mockSymptoms);
-      }
-      
-      setIsLoading(false);
     };
     
-    loadCycleData();
+    const fetchSymptomData = async () => {
+      setIsLoadingSymptoms(true);
+      try {
+        // Mock API call delay
+        await new Promise(resolve => setTimeout(resolve, 700));
+        
+        // Mock data
+        const mockSymptoms: SymptomEntry[] = [
+          {
+            id: "1",
+            userId: user.id,
+            date: "2025-04-16",
+            type: "cramps",
+            intensity: 7,
+            notes: "Moderate pain, used heating pad",
+            createdAt: "2025-04-16T14:20:00Z"
+          },
+          {
+            id: "2",
+            userId: user.id,
+            date: "2025-04-17",
+            type: "headache",
+            intensity: 5,
+            createdAt: "2025-04-17T09:45:00Z"
+          },
+          {
+            id: "3",
+            userId: user.id,
+            date: "2025-04-18",
+            type: "fatigue",
+            intensity: 6,
+            notes: "Very tired all day",
+            createdAt: "2025-04-18T20:10:00Z"
+          },
+          {
+            id: "4",
+            userId: user.id,
+            date: "2025-03-18",
+            type: "cramps",
+            intensity: 8,
+            createdAt: "2025-03-18T11:30:00Z"
+          }
+        ];
+        
+        setSymptoms(mockSymptoms);
+      } catch (error) {
+        toast({
+          title: "Error fetching symptom data",
+          description: "Please try again later.",
+          variant: "destructive",
+        });
+        console.error("Error fetching symptom data:", error);
+      } finally {
+        setIsLoadingSymptoms(false);
+      }
+    };
+    
+    fetchCycleData();
+    fetchSymptomData();
   }, [user]);
   
-  const addCycle = (cycle: Omit<CycleLog, "id" | "userId">) => {
+  const addCycleEntry = async (entry: Omit<CycleEntry, "id" | "userId" | "createdAt">) => {
     if (!user) return;
     
-    const newCycle: CycleLog = {
-      id: `cycle-${Date.now()}`,
-      userId: user.id,
-      ...cycle,
-    };
-    
-    const updatedCycles = [...cycleHistory, newCycle];
-    setCycleHistory(updatedCycles);
-    localStorage.setItem(`herhealth_cycles_${user.id}`, JSON.stringify(updatedCycles));
-    return newCycle;
+    try {
+      // Mock API call delay
+      await new Promise(resolve => setTimeout(resolve, 500));
+      
+      const newEntry: CycleEntry = {
+        id: `cycle-${Date.now()}`,
+        userId: user.id,
+        ...entry,
+        createdAt: new Date().toISOString()
+      };
+      
+      setCycles(prevCycles => [newEntry, ...prevCycles]);
+      
+      toast({
+        title: "Period Logged!",
+        description: "Your period has been recorded.",
+      });
+      
+      return newEntry;
+    } catch (error) {
+      toast({
+        title: "Error saving cycle data",
+        description: "Please try again later.",
+        variant: "destructive",
+      });
+      console.error("Error saving cycle data:", error);
+    }
   };
   
-  const addSymptom = (symptom: Omit<SymptomLog, "id" | "userId">) => {
+  const addSymptomEntry = async (entry: Omit<SymptomEntry, "id" | "userId" | "createdAt">) => {
     if (!user) return;
     
-    const newSymptom: SymptomLog = {
-      id: `symptom-${Date.now()}`,
-      userId: user.id,
-      ...symptom,
-    };
-    
-    const updatedSymptoms = [...symptoms, newSymptom];
-    setSymptoms(updatedSymptoms);
-    localStorage.setItem(`herhealth_symptoms_${user.id}`, JSON.stringify(updatedSymptoms));
-    return newSymptom;
+    try {
+      // Mock API call delay
+      await new Promise(resolve => setTimeout(resolve, 500));
+      
+      const newEntry: SymptomEntry = {
+        id: `symptom-${Date.now()}`,
+        userId: user.id,
+        ...entry,
+        createdAt: new Date().toISOString()
+      };
+      
+      setSymptoms(prevSymptoms => [newEntry, ...prevSymptoms]);
+      
+      toast({
+        title: "Symptom Logged!",
+        description: "Your symptom has been recorded.",
+      });
+      
+      return newEntry;
+    } catch (error) {
+      toast({
+        title: "Error saving symptom data",
+        description: "Please try again later.",
+        variant: "destructive",
+      });
+      console.error("Error saving symptom data:", error);
+    }
   };
   
   return {
-    cycleHistory,
+    cycles,
     symptoms,
-    isLoading,
-    addCycle,
-    addSymptom,
+    isLoadingCycles,
+    isLoadingSymptoms,
+    isLoading: isLoadingCycles || isLoadingSymptoms,
+    addCycleEntry,
+    addSymptomEntry
   };
 };
-
-// Helper functions to generate mock data
-function generateMockCycles(userId: string): CycleLog[] {
-  const today = new Date();
-  const cycles: CycleLog[] = [];
-  
-  // Generate 6 recent cycles, approximately 28 days apart
-  for (let i = 0; i < 6; i++) {
-    const cycleStart = new Date(today);
-    cycleStart.setDate(today.getDate() - (i * 28 + 5)); // Last cycle started 5 days ago
-    
-    const cycleEnd = new Date(cycleStart);
-    cycleEnd.setDate(cycleStart.getDate() + 5); // Each period lasts about 5 days
-    
-    cycles.push({
-      id: `mock-cycle-${i}`,
-      userId,
-      startDate: cycleStart.toISOString(),
-      endDate: cycleEnd.toISOString(),
-      flowIntensity: i % 3 === 0 ? 'heavy' : i % 3 === 1 ? 'medium' : 'light',
-      notes: i === 0 ? 'Had some cramps on day 2' : undefined,
-    });
-  }
-  
-  return cycles.reverse(); // Most recent first
-}
-
-function generateMockSymptoms(userId: string): SymptomLog[] {
-  const today = new Date();
-  const symptoms: SymptomLog[] = [];
-  
-  // Generate random symptoms over the last 30 days
-  const symptomTypes = ['cramps', 'headache', 'bloating', 'fatigue', 'mood swings'];
-  
-  for (let i = 0; i < 15; i++) {
-    const symptomDate = new Date(today);
-    symptomDate.setDate(today.getDate() - Math.floor(Math.random() * 30));
-    
-    symptoms.push({
-      id: `mock-symptom-${i}`,
-      userId,
-      date: symptomDate.toISOString(),
-      type: symptomTypes[Math.floor(Math.random() * symptomTypes.length)],
-      intensity: Math.floor(Math.random() * 10) + 1,
-      notes: i % 3 === 0 ? 'This was particularly bad today' : undefined,
-    });
-  }
-  
-  return symptoms.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
-}

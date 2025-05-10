@@ -1,27 +1,26 @@
 
-import { useState } from "react";
 import { AppLayout } from "@/components/layout/AppLayout";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Calendar, Droplet, TrendingUp, Clock, Plus, PlusCircle } from "lucide-react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
-import { useCycleTracker } from "@/hooks/useCycleTracker";
 import { useAuth } from "@/context/AuthContext";
 import { Navigate } from "react-router-dom";
-import { Input } from "@/components/ui/input";
+import { useCycleTracker } from "@/hooks/useCycleTracker";
+import { useState } from "react";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Calendar, Plus, ArrowRight, AlertCircle } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "@/components/ui/use-toast";
 
 const CycleTrackerPage = () => {
-  const { user, isLoading: authLoading } = useAuth();
-  const { cycleHistory, symptoms, isLoading: cycleLoading, addCycle, addSymptom } = useCycleTracker();
+  const { user, isLoading } = useAuth();
+  const { cycles, symptoms, isLoadingCycles } = useCycleTracker();
+  const [cycleDialogOpen, setCycleDialogOpen] = useState(false);
+  const [symptomDialogOpen, setSymptomDialogOpen] = useState(false);
   
-  const [openAddCycle, setOpenAddCycle] = useState(false);
-  const [openAddSymptom, setOpenAddSymptom] = useState(false);
-  
-  if (authLoading || cycleLoading) {
+  if (isLoading) {
     return <div>Loading...</div>;
   }
   
@@ -29,285 +28,244 @@ const CycleTrackerPage = () => {
     return <Navigate to="/login" />;
   }
   
-  const handleAddCycle = (data: any) => {
-    addCycle({
-      startDate: data.startDate,
-      flowIntensity: data.flowIntensity,
-      notes: data.notes,
-    });
-    
-    setOpenAddCycle(false);
-    toast({
-      title: "Cycle Added!",
-      description: "Your period has been logged successfully.",
-    });
-  };
-  
-  const handleAddSymptom = (data: any) => {
-    addSymptom({
-      date: data.date,
-      type: data.symptomType,
-      intensity: parseInt(data.intensity, 10),
-      notes: data.notes,
-    });
-    
-    setOpenAddSymptom(false);
-    toast({
-      title: "Symptom Added!",
-      description: "Your symptom has been logged successfully.",
-    });
-  };
-  
   return (
     <AppLayout>
       <div className="py-8 bg-gray-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between mb-6">
-            <div>
-              <h1 className="text-3xl font-bold">Cycle & Symptom Tracker</h1>
-              <p className="text-gray-600">Track your period, symptoms, and gain insights into your patterns</p>
-            </div>
-            
-            <div className="flex gap-3">
-              <Button 
-                onClick={() => setOpenAddCycle(true)}
-                className="bg-herhealth-pink-dark hover:bg-herhealth-pink text-white"
-              >
-                <Plus className="h-4 w-4 mr-2" /> Log Period
-              </Button>
-              <Button 
-                onClick={() => setOpenAddSymptom(true)}
-                variant="outline"
-              >
-                <Plus className="h-4 w-4 mr-2" /> Log Symptom
-              </Button>
-            </div>
+        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="mb-6">
+            <h1 className="text-3xl font-bold">Cycle Tracker</h1>
+            <p className="text-gray-600">Track, analyze, and understand your menstrual cycle</p>
           </div>
           
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             <div className="lg:col-span-2">
-              <Card>
-                <CardHeader className="bg-herhealth-pink-light/40 pb-2">
-                  <div className="flex justify-between items-center">
-                    <div>
-                      <CardTitle>Cycle Calendar</CardTitle>
-                      <CardDescription>View your period, fertile window, and symptoms</CardDescription>
-                    </div>
-                    <Button variant="ghost" size="sm">
-                      <Clock className="h-4 w-4 mr-1" /> History
-                    </Button>
-                  </div>
-                </CardHeader>
-                <CardContent className="p-6">
-                  {/* Calendar placeholder - In a real implementation, this would be a proper calendar component */}
-                  <div className="bg-white border rounded-lg shadow-sm">
-                    <div className="p-4 border-b">
-                      <div className="flex justify-between items-center">
-                        <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-                          &lt;
-                        </Button>
-                        <h3 className="font-medium">May 2025</h3>
-                        <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-                          &gt;
-                        </Button>
-                      </div>
-                    </div>
-                    <div className="grid grid-cols-7 gap-0">
-                      {/* Days of week */}
-                      {['S', 'M', 'T', 'W', 'T', 'F', 'S'].map((day, i) => (
-                        <div key={i} className="p-2 text-center text-xs font-medium text-gray-500">
-                          {day}
-                        </div>
-                      ))}
-                      
-                      {/* Empty days from previous month */}
-                      {[...Array(3)].map((_, i) => (
-                        <div key={`empty-${i}`} className="p-2 text-center text-xs text-gray-300">
-                          {30 - 2 + i}
-                        </div>
-                      ))}
-                      
-                      {/* Days of current month */}
-                      {[...Array(31)].map((_, i) => {
-                        const dayNum = i + 1;
-                        let bgColor = '';
-                        let textColor = '';
-                        
-                        // Simulate period days
-                        if (dayNum >= 5 && dayNum <= 10) {
-                          bgColor = 'bg-herhealth-pink-light';
-                          textColor = 'text-herhealth-pink-dark font-medium';
-                        }
-                        
-                        // Simulate fertile window
-                        if (dayNum >= 15 && dayNum <= 20) {
-                          bgColor = 'bg-herhealth-green-light';
-                          textColor = 'text-herhealth-green-dark font-medium';
-                        }
-                        
-                        // Simulate today
-                        if (dayNum === 10) {
-                          bgColor = 'bg-herhealth-pink';
-                          textColor = 'text-white font-bold';
-                        }
-                        
-                        return (
-                          <div 
-                            key={dayNum}
-                            className={`p-2 text-center border-t ${bgColor}`}
-                          >
-                            <div className={`text-sm ${textColor}`}>{dayNum}</div>
-                            {/* Symptom indicators */}
-                            {dayNum === 6 && (
-                              <div className="flex justify-center mt-1">
-                                <div className="h-1.5 w-1.5 rounded-full bg-herhealth-purple-dark"></div>
-                              </div>
-                            )}
-                            {dayNum === 18 && (
-                              <div className="flex justify-center mt-1">
-                                <div className="h-1.5 w-1.5 rounded-full bg-herhealth-blue-dark"></div>
-                              </div>
-                            )}
-                          </div>
-                        );
-                      })}
-                    </div>
-                  </div>
-                  
-                  {/* Calendar Legend */}
-                  <div className="flex flex-wrap gap-4 mt-4 text-sm">
-                    <div className="flex items-center">
-                      <div className="h-3 w-3 rounded-full bg-herhealth-pink-light mr-2"></div>
-                      <span>Period</span>
-                    </div>
-                    <div className="flex items-center">
-                      <div className="h-3 w-3 rounded-full bg-herhealth-green-light mr-2"></div>
-                      <span>Fertile Window</span>
-                    </div>
-                    <div className="flex items-center">
-                      <div className="h-3 w-3 rounded-full bg-herhealth-purple-dark mr-2"></div>
-                      <span>Symptom</span>
-                    </div>
-                    <div className="flex items-center">
-                      <div className="h-3 w-3 rounded-full bg-herhealth-blue-dark mr-2"></div>
-                      <span>Activity</span>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
+              <CycleCalendar />
             </div>
             
-            <div>
-              <Card className="mb-6">
-                <CardHeader className="bg-herhealth-blue-light/40 pb-2">
-                  <CardTitle>Cycle Insights</CardTitle>
-                  <CardDescription>Based on your historical data</CardDescription>
-                </CardHeader>
-                <CardContent className="p-4">
-                  <div className="space-y-4">
-                    <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                      <div className="flex items-center">
-                        <Calendar className="h-5 w-5 text-herhealth-blue-dark mr-3" />
-                        <span className="font-medium">Average Cycle Length</span>
-                      </div>
-                      <span className="text-lg font-bold">28 days</span>
-                    </div>
-                    
-                    <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                      <div className="flex items-center">
-                        <Droplet className="h-5 w-5 text-herhealth-pink-dark mr-3" />
-                        <span className="font-medium">Average Period Length</span>
-                      </div>
-                      <span className="text-lg font-bold">5 days</span>
-                    </div>
-                    
-                    <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                      <div className="flex items-center">
-                        <TrendingUp className="h-5 w-5 text-herhealth-purple-dark mr-3" />
-                        <span className="font-medium">Most Common Symptom</span>
-                      </div>
-                      <span className="text-lg font-bold">Cramps</span>
-                    </div>
-                  </div>
-                  
-                  <Button variant="outline" className="w-full mt-4">
-                    View Full Analysis
-                  </Button>
-                </CardContent>
-              </Card>
-              
-              <Card>
-                <CardHeader className="bg-herhealth-purple-light/40 pb-2">
-                  <CardTitle>Recent Symptoms</CardTitle>
-                  <CardDescription>Your recently logged symptoms</CardDescription>
-                </CardHeader>
-                <CardContent className="p-4">
-                  <div className="space-y-3">
-                    {symptoms.slice(0, 3).map((symptom) => (
-                      <div key={symptom.id} className="flex items-start p-3 bg-gray-50 rounded-lg">
-                        <div className="h-8 w-8 rounded-full bg-herhealth-purple-light flex items-center justify-center mr-3">
-                          <span className="text-sm font-bold text-herhealth-purple-dark">
-                            {symptom.intensity}
-                          </span>
-                        </div>
-                        <div>
-                          <h4 className="font-medium">{symptom.type}</h4>
-                          <p className="text-xs text-gray-500">
-                            {new Date(symptom.date).toLocaleDateString()}
-                          </p>
-                          {symptom.notes && (
-                            <p className="text-xs mt-1">{symptom.notes}</p>
-                          )}
-                        </div>
-                      </div>
-                    ))}
-                    
-                    <Button 
-                      variant="ghost" 
-                      className="w-full text-herhealth-purple-dark hover:bg-herhealth-purple-light/30"
-                      onClick={() => setOpenAddSymptom(true)}
-                    >
-                      <PlusCircle className="h-4 w-4 mr-2" /> Log New Symptom
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
+            <div className="space-y-6">
+              <QuickActions 
+                onAddCycle={() => setCycleDialogOpen(true)}
+                onAddSymptom={() => setSymptomDialogOpen(true)}
+              />
+              <CycleSummary />
             </div>
+          </div>
+          
+          <div className="mt-8">
+            <Tabs defaultValue="symptoms">
+              <TabsList className="mb-4">
+                <TabsTrigger value="symptoms">Symptoms</TabsTrigger>
+                <TabsTrigger value="patterns">Patterns</TabsTrigger>
+                <TabsTrigger value="insights">AI Insights</TabsTrigger>
+              </TabsList>
+              
+              <TabsContent value="symptoms" className="p-4 bg-white rounded-lg border">
+                <SymptomsTrends />
+              </TabsContent>
+              
+              <TabsContent value="patterns" className="p-4 bg-white rounded-lg border">
+                <CyclePatterns />
+              </TabsContent>
+              
+              <TabsContent value="insights" className="p-4 bg-white rounded-lg border">
+                <AiInsights />
+              </TabsContent>
+            </Tabs>
           </div>
         </div>
       </div>
       
-      {/* Add Cycle Dialog */}
-      <AddCycleDialog open={openAddCycle} onOpenChange={setOpenAddCycle} onSubmit={handleAddCycle} />
-      
-      {/* Add Symptom Dialog */}
-      <AddSymptomDialog open={openAddSymptom} onOpenChange={setOpenAddSymptom} onSubmit={handleAddSymptom} />
+      <AddCycleDialog open={cycleDialogOpen} onOpenChange={setCycleDialogOpen} />
+      <AddSymptomDialog open={symptomDialogOpen} onOpenChange={setSymptomDialogOpen} />
     </AppLayout>
   );
 };
 
-interface AddCycleDialogProps {
+const CycleCalendar = () => {
+  // This would be replaced with a real calendar component
+  return (
+    <Card className="w-full">
+      <CardHeader className="bg-herhealth-pink-light/30 pb-2">
+        <CardTitle>May 2025</CardTitle>
+      </CardHeader>
+      <CardContent className="p-4">
+        <div className="text-center p-10 border rounded-md">
+          <AlertCircle className="h-12 w-12 text-gray-300 mx-auto mb-4" />
+          <p className="text-gray-500">Full calendar implementation coming soon</p>
+          <p className="text-sm text-gray-400 mt-2">This is a placeholder for the interactive cycle calendar</p>
+        </div>
+      </CardContent>
+    </Card>
+  );
+};
+
+const QuickActions = ({ onAddCycle, onAddSymptom }: { onAddCycle: () => void, onAddSymptom: () => void }) => {
+  return (
+    <Card>
+      <CardHeader className="pb-2">
+        <CardTitle>Quick Actions</CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-3">
+        <Button 
+          className="w-full bg-herhealth-pink-dark hover:bg-herhealth-pink text-white justify-start"
+          onClick={onAddCycle}
+        >
+          <Plus className="h-4 w-4 mr-2" />
+          Start Period
+        </Button>
+        
+        <Button 
+          variant="outline" 
+          className="w-full border-herhealth-purple-dark text-herhealth-purple-dark hover:bg-herhealth-purple-light/30 justify-start"
+          onClick={onAddSymptom}
+        >
+          <Plus className="h-4 w-4 mr-2" />
+          Log Symptom
+        </Button>
+        
+        <Button 
+          variant="outline" 
+          className="w-full border-gray-200 text-gray-700 hover:bg-gray-100 justify-start"
+        >
+          <Plus className="h-4 w-4 mr-2" />
+          Add Notes
+        </Button>
+      </CardContent>
+    </Card>
+  );
+};
+
+const CycleSummary = () => {
+  return (
+    <Card>
+      <CardHeader className="pb-2">
+        <div className="flex justify-between items-center">
+          <CardTitle>Cycle Summary</CardTitle>
+          <Button variant="ghost" size="sm" className="h-7 gap-1 text-xs">
+            History
+            <ArrowRight className="h-3 w-3" />
+          </Button>
+        </div>
+      </CardHeader>
+      <CardContent>
+        <div className="space-y-4">
+          <div>
+            <p className="text-sm text-gray-500">Current Cycle Day</p>
+            <p className="text-3xl font-bold text-herhealth-pink-dark">14</p>
+          </div>
+          
+          <div>
+            <p className="text-sm text-gray-500">Next Period in</p>
+            <p className="text-xl font-bold">14 days</p>
+            <p className="text-xs text-gray-500">Estimated: May 15, 2025</p>
+          </div>
+          
+          <div>
+            <p className="text-sm text-gray-500">Average Cycle Length</p>
+            <p className="text-xl font-bold">28 days</p>
+            <p className="text-xs text-gray-500">Based on last 6 cycles</p>
+          </div>
+          
+          <div className="p-3 bg-herhealth-blue-light/30 rounded-md">
+            <p className="text-sm font-medium text-herhealth-blue-dark">Current Phase</p>
+            <p className="text-lg font-bold text-herhealth-blue-dark">Ovulation</p>
+            <p className="text-xs text-gray-600">Fertile window active</p>
+          </div>
+        </div>
+      </CardContent>
+    </Card>
+  );
+};
+
+const SymptomsTrends = () => {
+  // This would be filled with real data and charts
+  return (
+    <div className="space-y-4">
+      <h3 className="font-medium text-lg">Symptom Analysis</h3>
+      <p className="text-gray-500">Track how your symptoms correlate with your cycle phases</p>
+      
+      <div className="p-4 bg-gray-50 rounded-md text-center">
+        <p className="text-gray-400">Symptom visualization coming soon</p>
+      </div>
+      
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+        <div className="p-3 bg-herhealth-purple-light/30 rounded-md text-center">
+          <p className="text-sm font-medium">Most Common</p>
+          <p className="text-lg font-bold text-herhealth-purple-dark">Cramps</p>
+        </div>
+        <div className="p-3 bg-herhealth-purple-light/30 rounded-md text-center">
+          <p className="text-sm font-medium">Highest Intensity</p>
+          <p className="text-lg font-bold text-herhealth-purple-dark">Headaches</p>
+        </div>
+        <div className="p-3 bg-herhealth-purple-light/30 rounded-md text-center">
+          <p className="text-sm font-medium">Duration</p>
+          <p className="text-lg font-bold text-herhealth-purple-dark">2-3 Days</p>
+        </div>
+        <div className="p-3 bg-herhealth-purple-light/30 rounded-md text-center">
+          <p className="text-sm font-medium">Trend</p>
+          <p className="text-lg font-bold text-herhealth-purple-dark">Improving</p>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+const CyclePatterns = () => {
+  return (
+    <div className="space-y-4">
+      <h3 className="font-medium text-lg">Cycle Patterns</h3>
+      <p className="text-gray-500">Analyze your historical cycle data and identify patterns</p>
+      
+      <div className="p-4 bg-gray-50 rounded-md text-center">
+        <p className="text-gray-400">Cycle pattern visualization coming soon</p>
+      </div>
+    </div>
+  );
+};
+
+const AiInsights = () => {
+  return (
+    <div className="space-y-4">
+      <h3 className="font-medium text-lg">AI-Generated Insights</h3>
+      <p className="text-gray-500">Personalized insights based on your unique patterns</p>
+      
+      <div className="space-y-3">
+        <div className="p-4 bg-herhealth-green-light/30 rounded-md">
+          <h4 className="font-medium text-herhealth-green-dark">Cycle Regularity</h4>
+          <p className="text-sm mt-1">Your cycles have been consistent over the past 3 months. This regularity is a positive sign of hormonal balance.</p>
+        </div>
+        
+        <div className="p-4 bg-herhealth-blue-light/30 rounded-md">
+          <h4 className="font-medium text-herhealth-blue-dark">Symptom Correlation</h4>
+          <p className="text-sm mt-1">Headaches tend to occur 2-3 days before your period. Consider trying preventative measures like staying hydrated or magnesium supplements.</p>
+        </div>
+        
+        <div className="p-4 bg-herhealth-peach-light/30 rounded-md">
+          <h4 className="font-medium text-herhealth-peach-dark">Nutrition Recommendation</h4>
+          <p className="text-sm mt-1">Based on your reported fatigue during your period, consider increasing iron-rich foods like spinach and legumes during your luteal phase.</p>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+interface DialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onSubmit: (data: any) => void;
 }
 
-const AddCycleDialog = ({ open, onOpenChange, onSubmit }: AddCycleDialogProps) => {
+const AddCycleDialog = ({ open, onOpenChange }: DialogProps) => {
   const [startDate, setStartDate] = useState(new Date().toISOString().split('T')[0]);
   const [flowIntensity, setFlowIntensity] = useState("medium");
   const [notes, setNotes] = useState("");
   
   const handleSubmit = () => {
-    onSubmit({
-      startDate,
-      flowIntensity,
-      notes,
+    // This would call an API to save the cycle data
+    toast({
+      title: "Period Logged!",
+      description: "Your period has been recorded.",
     });
-    
-    // Reset form
-    setStartDate(new Date().toISOString().split('T')[0]);
-    setFlowIntensity("medium");
-    setNotes("");
+    onOpenChange(false);
   };
   
   return (
@@ -315,7 +273,7 @@ const AddCycleDialog = ({ open, onOpenChange, onSubmit }: AddCycleDialogProps) =
       <DialogContent>
         <DialogHeader>
           <DialogTitle>Log Period</DialogTitle>
-          <DialogDescription>Track your period and flow intensity.</DialogDescription>
+          <DialogDescription>Record the start of your period and flow details.</DialogDescription>
         </DialogHeader>
         
         <div className="space-y-4 py-4">
@@ -353,47 +311,32 @@ const AddCycleDialog = ({ open, onOpenChange, onSubmit }: AddCycleDialogProps) =
               onChange={(e) => setNotes(e.target.value)}
             />
           </div>
-          
-          <div className="flex justify-end gap-2 pt-2">
-            <Button variant="outline" onClick={() => onOpenChange(false)}>Cancel</Button>
-            <Button 
-              className="bg-herhealth-pink-dark hover:bg-herhealth-pink text-white"
-              onClick={handleSubmit}
-            >
-              Save
-            </Button>
-          </div>
         </div>
+        
+        <DialogFooter>
+          <Button variant="outline" onClick={() => onOpenChange(false)}>Cancel</Button>
+          <Button className="bg-herhealth-pink-dark hover:bg-herhealth-pink text-white" onClick={handleSubmit}>
+            Save
+          </Button>
+        </DialogFooter>
       </DialogContent>
     </Dialog>
   );
 };
 
-interface AddSymptomDialogProps {
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
-  onSubmit: (data: any) => void;
-}
-
-const AddSymptomDialog = ({ open, onOpenChange, onSubmit }: AddSymptomDialogProps) => {
+const AddSymptomDialog = ({ open, onOpenChange }: DialogProps) => {
   const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
   const [symptomType, setSymptomType] = useState("cramps");
   const [intensity, setIntensity] = useState("5");
   const [notes, setNotes] = useState("");
   
   const handleSubmit = () => {
-    onSubmit({
-      date,
-      symptomType,
-      intensity,
-      notes,
+    // This would call an API to save the symptom data
+    toast({
+      title: "Symptom Logged!",
+      description: "Your symptom has been recorded.",
     });
-    
-    // Reset form
-    setDate(new Date().toISOString().split('T')[0]);
-    setSymptomType("cramps");
-    setIntensity("5");
-    setNotes("");
+    onOpenChange(false);
   };
   
   return (
@@ -440,7 +383,7 @@ const AddSymptomDialog = ({ open, onOpenChange, onSubmit }: AddSymptomDialogProp
                 <SelectValue placeholder="Select intensity" />
               </SelectTrigger>
               <SelectContent>
-                {[...Array(10)].map((_, i) => (
+                {Array.from({ length: 10 }, (_, i) => (
                   <SelectItem key={i + 1} value={(i + 1).toString()}>
                     {i + 1}
                   </SelectItem>
@@ -458,17 +401,14 @@ const AddSymptomDialog = ({ open, onOpenChange, onSubmit }: AddSymptomDialogProp
               onChange={(e) => setNotes(e.target.value)}
             />
           </div>
-          
-          <div className="flex justify-end gap-2 pt-2">
-            <Button variant="outline" onClick={() => onOpenChange(false)}>Cancel</Button>
-            <Button 
-              className="bg-herhealth-purple-dark hover:bg-herhealth-purple text-white"
-              onClick={handleSubmit}
-            >
-              Save
-            </Button>
-          </div>
         </div>
+        
+        <DialogFooter>
+          <Button variant="outline" onClick={() => onOpenChange(false)}>Cancel</Button>
+          <Button className="bg-herhealth-purple-dark hover:bg-herhealth-purple text-white" onClick={handleSubmit}>
+            Save
+          </Button>
+        </DialogFooter>
       </DialogContent>
     </Dialog>
   );
