@@ -35,7 +35,7 @@ export const ReadinessScore = () => {
               </div>
               <span className="text-sm font-medium">{recovery}%</span>
             </div>
-            <Progress value={recovery} className="h-2" indicatorClassName="bg-herhealth-green-dark" />
+            <Progress value={recovery} className="h-2" />
           </div>
           
           <div className="space-y-2">
@@ -46,7 +46,7 @@ export const ReadinessScore = () => {
               </div>
               <span className="text-sm font-medium">{sleep}%</span>
             </div>
-            <Progress value={sleep} className="h-2" indicatorClassName="bg-herhealth-green-dark" />
+            <Progress value={sleep} className="h-2" />
           </div>
           
           <div className="p-3 bg-herhealth-pink-light/50 rounded-md">

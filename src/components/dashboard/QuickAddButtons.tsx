@@ -1,7 +1,6 @@
-
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Calendar, Plus, Activity, Heartbeat, BookMedical, MessageSquare } from "lucide-react";
+import { Calendar, Plus, Activity, Heart, Stethoscope, MessageSquare } from "lucide-react";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
@@ -48,7 +47,7 @@ export const QuickAddButtons = () => {
           <Dialog open={open.symptom} onOpenChange={(isOpen) => setOpen(prev => ({ ...prev, symptom: isOpen }))}>
             <DialogTrigger asChild>
               <Button variant="outline" className="flex flex-col h-20 gap-1 hover:bg-herhealth-purple-light/50 border-herhealth-purple-light">
-                <Heartbeat className="h-5 w-5 text-herhealth-purple-dark" />
+                <Heart className="h-5 w-5 text-herhealth-purple-dark" />
                 <span className="text-xs">Symptom</span>
               </Button>
             </DialogTrigger>
@@ -89,7 +88,7 @@ export const QuickAddButtons = () => {
           <Dialog open={open.appointment} onOpenChange={(isOpen) => setOpen(prev => ({ ...prev, appointment: isOpen }))}>
             <DialogTrigger asChild>
               <Button variant="outline" className="flex flex-col h-20 gap-1 hover:bg-herhealth-blue-light/50 border-herhealth-blue-light">
-                <BookMedical className="h-5 w-5 text-herhealth-blue-dark" />
+                <Stethoscope className="h-5 w-5 text-herhealth-blue-dark" />
                 <span className="text-xs">Appointment</span>
               </Button>
             </DialogTrigger>

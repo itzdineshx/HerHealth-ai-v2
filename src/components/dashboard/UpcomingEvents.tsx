@@ -1,7 +1,7 @@
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Calendar, Check, ArrowRight, User, Pills, Flask } from "lucide-react";
+import { Calendar, Check, ArrowRight, User, Pill, Stethoscope } from "lucide-react";
 import { Link } from "react-router-dom";
 
 export const UpcomingEvents = () => {
@@ -33,7 +33,7 @@ export const UpcomingEvents = () => {
       title: "Refill Prescription",
       date: "May 12, 2025",
       daysAway: 2,
-      icon: <Pills className="h-4 w-4" />,
+      icon: <Pill className="h-4 w-4" />,
       color: "text-herhealth-purple-dark",
       bgColor: "bg-herhealth-purple-light",
     },
