@@ -14,6 +14,9 @@ import OnboardingPage from "./pages/OnboardingPage";
 import DashboardPage from "./pages/DashboardPage";
 import CycleTrackerPage from "./pages/CycleTrackerPage";
 import WellnessHubPage from "./pages/WellnessHubPage";
+import MentalHealthPage from "./pages/MentalHealthPage";
+import PregnancyPage from "./pages/PregnancyPage";
+import MenopausePage from "./pages/MenopausePage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -33,6 +36,9 @@ const App = () => (
             <Route path="/dashboard" element={<DashboardPage />} />
             <Route path="/cycle" element={<CycleTrackerPage />} />
             <Route path="/wellness" element={<WellnessHubPage />} />
+            <Route path="/mental-health" element={<MentalHealthPage />} />
+            <Route path="/pregnancy" element={<PregnancyPage />} />
+            <Route path="/menopause" element={<MenopausePage />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>

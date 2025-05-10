@@ -2,11 +2,13 @@
 import { useState, useEffect } from "react";
 import { useAuth } from "@/context/AuthContext";
 import { toast } from "@/components/ui/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 
 interface CycleEntry {
   id: string;
   userId: string;
   startDate: string;
+  endDate?: string;
   flowIntensity: "spotting" | "light" | "medium" | "heavy";
   notes?: string;
   createdAt: string;
@@ -32,15 +34,39 @@ export const useCycleTracker = () => {
   useEffect(() => {
     if (!user) return;
     
-    // In a real app, this would fetch from a database
-    // For now, we'll use mock data
     const fetchCycleData = async () => {
       setIsLoadingCycles(true);
       try {
-        // Mock API call delay
-        await new Promise(resolve => setTimeout(resolve, 500));
+        const { data, error } = await supabase
+          .from("cycle_logs")
+          .select("*")
+          .eq("user_id", user.id)
+          .order("start_date", { ascending: false });
         
-        // Mock data
+        if (error) throw error;
+        
+        if (data) {
+          const formattedData: CycleEntry[] = data.map(entry => ({
+            id: entry.id,
+            userId: entry.user_id,
+            startDate: entry.start_date,
+            endDate: entry.end_date || undefined,
+            flowIntensity: entry.flow_intensity as "spotting" | "light" | "medium" | "heavy",
+            notes: entry.notes || undefined,
+            createdAt: entry.created_at
+          }));
+          
+          setCycles(formattedData);
+        }
+      } catch (error) {
+        console.error("Error fetching cycle data:", error);
+        toast({
+          title: "Error fetching cycle data",
+          description: "Please try again later.",
+          variant: "destructive",
+        });
+        
+        // Fallback to mock data if there's an error
         const mockCycles: CycleEntry[] = [
           {
             id: "1",
@@ -68,13 +94,6 @@ export const useCycleTracker = () => {
         ];
         
         setCycles(mockCycles);
-      } catch (error) {
-        toast({
-          title: "Error fetching cycle data",
-          description: "Please try again later.",
-          variant: "destructive",
-        });
-        console.error("Error fetching cycle data:", error);
       } finally {
         setIsLoadingCycles(false);
       }
@@ -83,10 +102,36 @@ export const useCycleTracker = () => {
     const fetchSymptomData = async () => {
       setIsLoadingSymptoms(true);
       try {
-        // Mock API call delay
-        await new Promise(resolve => setTimeout(resolve, 700));
+        const { data, error } = await supabase
+          .from("symptom_logs")
+          .select("*")
+          .eq("user_id", user.id)
+          .order("date", { ascending: false });
         
-        // Mock data
+        if (error) throw error;
+        
+        if (data) {
+          const formattedData: SymptomEntry[] = data.map(entry => ({
+            id: entry.id,
+            userId: entry.user_id,
+            date: entry.date,
+            type: entry.symptom_type,
+            intensity: entry.intensity,
+            notes: entry.notes || undefined,
+            createdAt: entry.created_at
+          }));
+          
+          setSymptoms(formattedData);
+        }
+      } catch (error) {
+        console.error("Error fetching symptom data:", error);
+        toast({
+          title: "Error fetching symptom data",
+          description: "Please try again later.",
+          variant: "destructive",
+        });
+        
+        // Fallback to mock data if there's an error
         const mockSymptoms: SymptomEntry[] = [
           {
             id: "1",
@@ -125,13 +170,6 @@ export const useCycleTracker = () => {
         ];
         
         setSymptoms(mockSymptoms);
-      } catch (error) {
-        toast({
-          title: "Error fetching symptom data",
-          description: "Please try again later.",
-          variant: "destructive",
-        });
-        console.error("Error fetching symptom data:", error);
       } finally {
         setIsLoadingSymptoms(false);
       }
@@ -145,31 +183,49 @@ export const useCycleTracker = () => {
     if (!user) return;
     
     try {
-      // Mock API call delay
-      await new Promise(resolve => setTimeout(resolve, 500));
+      const { data, error } = await supabase
+        .from("cycle_logs")
+        .insert([
+          {
+            user_id: user.id,
+            start_date: entry.startDate,
+            end_date: entry.endDate,
+            flow_intensity: entry.flowIntensity,
+            notes: entry.notes
+          }
+        ])
+        .select()
+        .single();
       
-      const newEntry: CycleEntry = {
-        id: `cycle-${Date.now()}`,
-        userId: user.id,
-        ...entry,
-        createdAt: new Date().toISOString()
-      };
+      if (error) throw error;
       
-      setCycles(prevCycles => [newEntry, ...prevCycles]);
-      
-      toast({
-        title: "Period Logged!",
-        description: "Your period has been recorded.",
-      });
-      
-      return newEntry;
+      if (data) {
+        const newEntry: CycleEntry = {
+          id: data.id,
+          userId: data.user_id,
+          startDate: data.start_date,
+          endDate: data.end_date || undefined,
+          flowIntensity: data.flow_intensity as "spotting" | "light" | "medium" | "heavy",
+          notes: data.notes || undefined,
+          createdAt: data.created_at
+        };
+        
+        setCycles(prevCycles => [newEntry, ...prevCycles]);
+        
+        toast({
+          title: "Period Logged!",
+          description: "Your period has been recorded.",
+        });
+        
+        return newEntry;
+      }
     } catch (error) {
+      console.error("Error saving cycle data:", error);
       toast({
         title: "Error saving cycle data",
         description: "Please try again later.",
         variant: "destructive",
       });
-      console.error("Error saving cycle data:", error);
     }
   };
   
@@ -177,31 +233,49 @@ export const useCycleTracker = () => {
     if (!user) return;
     
     try {
-      // Mock API call delay
-      await new Promise(resolve => setTimeout(resolve, 500));
+      const { data, error } = await supabase
+        .from("symptom_logs")
+        .insert([
+          {
+            user_id: user.id,
+            date: entry.date,
+            symptom_type: entry.type,
+            intensity: entry.intensity,
+            notes: entry.notes
+          }
+        ])
+        .select()
+        .single();
       
-      const newEntry: SymptomEntry = {
-        id: `symptom-${Date.now()}`,
-        userId: user.id,
-        ...entry,
-        createdAt: new Date().toISOString()
-      };
+      if (error) throw error;
       
-      setSymptoms(prevSymptoms => [newEntry, ...prevSymptoms]);
-      
-      toast({
-        title: "Symptom Logged!",
-        description: "Your symptom has been recorded.",
-      });
-      
-      return newEntry;
+      if (data) {
+        const newEntry: SymptomEntry = {
+          id: data.id,
+          userId: data.user_id,
+          date: data.date,
+          type: data.symptom_type,
+          intensity: data.intensity,
+          notes: data.notes || undefined,
+          createdAt: data.created_at
+        };
+        
+        setSymptoms(prevSymptoms => [newEntry, ...prevSymptoms]);
+        
+        toast({
+          title: "Symptom Logged!",
+          description: "Your symptom has been recorded.",
+        });
+        
+        return newEntry;
+      }
     } catch (error) {
+      console.error("Error saving symptom data:", error);
       toast({
         title: "Error saving symptom data",
         description: "Please try again later.",
         variant: "destructive",
       });
-      console.error("Error saving symptom data:", error);
     }
   };
   

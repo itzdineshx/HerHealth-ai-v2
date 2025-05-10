@@ -1,6 +1,8 @@
 
 import { createContext, useContext, useState, useEffect } from "react";
+import { supabase } from "@/integrations/supabase/client";
 import { User, LifeStage } from "@/types";
+import { toast } from "@/components/ui/use-toast";
 
 interface AuthContextType {
   user: User | null;
@@ -15,7 +17,7 @@ interface AuthContextType {
     lifeStage: LifeStage,
     location?: string
   ) => Promise<void>;
-  logout: () => void;
+  logout: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType>({
@@ -24,7 +26,7 @@ const AuthContext = createContext<AuthContextType>({
   isAuthenticated: false,
   login: async () => {},
   register: async () => {},
-  logout: () => {},
+  logout: async () => {},
 });
 
 export const useAuth = () => useContext(AuthContext);
@@ -33,45 +35,86 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  // For demo purposes, we'll simulate authentication with localStorage
   useEffect(() => {
-    const checkAuth = () => {
-      const storedUser = localStorage.getItem("herhealth_user");
-      if (storedUser) {
-        setUser(JSON.parse(storedUser));
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      (event, session) => {
+        if (session && session.user) {
+          fetchUserProfile(session.user.id);
+        } else {
+          setUser(null);
+          setIsLoading(false);
+        }
       }
-      setIsLoading(false);
-    };
+    );
 
-    checkAuth();
+    // Check for existing session
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session && session.user) {
+        fetchUserProfile(session.user.id);
+      } else {
+        setIsLoading(false);
+      }
+    });
+
+    return () => {
+      subscription.unsubscribe();
+    };
   }, []);
+
+  const fetchUserProfile = async (userId: string) => {
+    try {
+      const { data, error } = await supabase
+        .from("profiles")
+        .select("*")
+        .eq("id", userId)
+        .single();
+
+      if (error) {
+        console.error("Error fetching user profile:", error);
+        setUser(null);
+      } else if (data) {
+        setUser({
+          id: data.id,
+          name: data.name,
+          email: "", // Email isn't stored in the profiles table for security
+          dob: data.dob,
+          lifeStage: data.life_stage as LifeStage,
+          location: data.location || undefined,
+          privacyPreferences: {
+            dataSharing: data.data_sharing,
+            marketingEmails: data.marketing_emails,
+            researchParticipation: data.research_participation,
+          },
+          createdAt: data.created_at,
+        });
+      }
+    } catch (error) {
+      console.error("Error fetching user profile:", error);
+      setUser(null);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const login = async (email: string, password: string) => {
     setIsLoading(true);
     try {
-      // This would be an API call in a real application
-      // For now, let's simulate with mock data
-      const mockUser: User = {
-        id: "user-123",
-        name: "Jane Doe",
-        email: email,
-        dob: "1990-05-15",
-        lifeStage: "adult",
-        location: "New York, USA",
-        privacyPreferences: {
-          dataSharing: true,
-          marketingEmails: false,
-          researchParticipation: true,
-        },
-        createdAt: new Date().toISOString(),
-      };
-      
-      // Simulate API delay
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      localStorage.setItem("herhealth_user", JSON.stringify(mockUser));
-      setUser(mockUser);
-    } finally {
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
+
+      if (error) throw error;
+
+      if (data.user) {
+        fetchUserProfile(data.user.id);
+      }
+    } catch (error: any) {
+      toast({
+        title: "Login Failed",
+        description: error.message || "Please check your credentials and try again.",
+        variant: "destructive",
+      });
       setIsLoading(false);
     }
   };
@@ -86,36 +129,55 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   ) => {
     setIsLoading(true);
     try {
-      // This would be an API call in a real application
-      // For now, let's simulate with mock data
-      const mockUser: User = {
-        id: `user-${Date.now()}`,
-        name,
+      // Register the user with Supabase Auth
+      const { data, error } = await supabase.auth.signUp({
         email,
-        dob,
-        lifeStage,
-        location,
-        privacyPreferences: {
-          dataSharing: false,
-          marketingEmails: false,
-          researchParticipation: false,
+        password,
+        options: {
+          data: {
+            name,
+            dob,
+            life_stage: lifeStage,
+            location,
+          },
         },
-        createdAt: new Date().toISOString(),
-      };
-      
-      // Simulate API delay
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      localStorage.setItem("herhealth_user", JSON.stringify(mockUser));
-      setUser(mockUser);
-    } finally {
+      });
+
+      if (error) throw error;
+
+      if (data.user) {
+        // Trigger functions will create the profile
+        toast({
+          title: "Account created!",
+          description: "Welcome to HerHealth! Your wellness journey begins now.",
+        });
+      }
+    } catch (error: any) {
+      toast({
+        title: "Registration Failed",
+        description: error.message || "There was an error creating your account. Please try again.",
+        variant: "destructive",
+      });
       setIsLoading(false);
     }
   };
 
-  const logout = () => {
-    localStorage.removeItem("herhealth_user");
-    setUser(null);
+  const logout = async () => {
+    try {
+      await supabase.auth.signOut();
+      setUser(null);
+      
+      toast({
+        title: "Logged out",
+        description: "You've been successfully logged out.",
+      });
+    } catch (error: any) {
+      toast({
+        title: "Error logging out",
+        description: error.message || "There was an error logging out. Please try again.",
+        variant: "destructive",
+      });
+    }
   };
 
   return (
