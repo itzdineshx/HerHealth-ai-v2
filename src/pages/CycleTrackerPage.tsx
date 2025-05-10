@@ -13,10 +13,12 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "@/components/ui/use-toast";
+import { CycleCalendarVisualization } from "@/components/cycle/CycleCalendarVisualization";
+import { CycleStatistics } from "@/components/cycle/CycleStatistics";
 
 const CycleTrackerPage = () => {
   const { user, isLoading } = useAuth();
-  const { cycles, symptoms, isLoadingCycles } = useCycleTracker();
+  const { cycles, symptoms, isLoadingCycles, addCycleEntry, addSymptomEntry } = useCycleTracker();
   const [cycleDialogOpen, setCycleDialogOpen] = useState(false);
   const [symptomDialogOpen, setSymptomDialogOpen] = useState(false);
   
@@ -39,7 +41,7 @@ const CycleTrackerPage = () => {
           
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             <div className="lg:col-span-2">
-              <CycleCalendar />
+              <CycleCalendarVisualization />
             </div>
             
             <div className="space-y-6">
@@ -47,7 +49,7 @@ const CycleTrackerPage = () => {
                 onAddCycle={() => setCycleDialogOpen(true)}
                 onAddSymptom={() => setSymptomDialogOpen(true)}
               />
-              <CycleSummary />
+              <CycleStatistics />
             </div>
           </div>
           
@@ -60,11 +62,11 @@ const CycleTrackerPage = () => {
               </TabsList>
               
               <TabsContent value="symptoms" className="p-4 bg-white rounded-lg border">
-                <SymptomsTrends />
+                <SymptomsTrends symptoms={symptoms} />
               </TabsContent>
               
               <TabsContent value="patterns" className="p-4 bg-white rounded-lg border">
-                <CyclePatterns />
+                <CyclePatterns cycles={cycles} />
               </TabsContent>
               
               <TabsContent value="insights" className="p-4 bg-white rounded-lg border">
@@ -75,27 +77,18 @@ const CycleTrackerPage = () => {
         </div>
       </div>
       
-      <AddCycleDialog open={cycleDialogOpen} onOpenChange={setCycleDialogOpen} />
-      <AddSymptomDialog open={symptomDialogOpen} onOpenChange={setSymptomDialogOpen} />
+      <AddCycleDialog 
+        open={cycleDialogOpen} 
+        onOpenChange={setCycleDialogOpen}
+        onSave={addCycleEntry}
+      />
+      
+      <AddSymptomDialog 
+        open={symptomDialogOpen} 
+        onOpenChange={setSymptomDialogOpen} 
+        onSave={addSymptomEntry}
+      />
     </AppLayout>
-  );
-};
-
-const CycleCalendar = () => {
-  // This would be replaced with a real calendar component
-  return (
-    <Card className="w-full">
-      <CardHeader className="bg-herhealth-pink-light/30 pb-2">
-        <CardTitle>May 2025</CardTitle>
-      </CardHeader>
-      <CardContent className="p-4">
-        <div className="text-center p-10 border rounded-md">
-          <AlertCircle className="h-12 w-12 text-gray-300 mx-auto mb-4" />
-          <p className="text-gray-500">Full calendar implementation coming soon</p>
-          <p className="text-sm text-gray-400 mt-2">This is a placeholder for the interactive cycle calendar</p>
-        </div>
-      </CardContent>
-    </Card>
   );
 };
 
@@ -135,90 +128,157 @@ const QuickActions = ({ onAddCycle, onAddSymptom }: { onAddCycle: () => void, on
   );
 };
 
-const CycleSummary = () => {
-  return (
-    <Card>
-      <CardHeader className="pb-2">
-        <div className="flex justify-between items-center">
-          <CardTitle>Cycle Summary</CardTitle>
-          <Button variant="ghost" size="sm" className="h-7 gap-1 text-xs">
-            History
-            <ArrowRight className="h-3 w-3" />
-          </Button>
-        </div>
-      </CardHeader>
-      <CardContent>
-        <div className="space-y-4">
-          <div>
-            <p className="text-sm text-gray-500">Current Cycle Day</p>
-            <p className="text-3xl font-bold text-herhealth-pink-dark">14</p>
-          </div>
-          
-          <div>
-            <p className="text-sm text-gray-500">Next Period in</p>
-            <p className="text-xl font-bold">14 days</p>
-            <p className="text-xs text-gray-500">Estimated: May 15, 2025</p>
-          </div>
-          
-          <div>
-            <p className="text-sm text-gray-500">Average Cycle Length</p>
-            <p className="text-xl font-bold">28 days</p>
-            <p className="text-xs text-gray-500">Based on last 6 cycles</p>
-          </div>
-          
-          <div className="p-3 bg-herhealth-blue-light/30 rounded-md">
-            <p className="text-sm font-medium text-herhealth-blue-dark">Current Phase</p>
-            <p className="text-lg font-bold text-herhealth-blue-dark">Ovulation</p>
-            <p className="text-xs text-gray-600">Fertile window active</p>
-          </div>
-        </div>
-      </CardContent>
-    </Card>
-  );
-};
+interface SymptomsTrendsProps {
+  symptoms: Array<{
+    id: string;
+    userId: string;
+    date: string;
+    type: string;
+    intensity: number;
+    notes?: string;
+    createdAt: string;
+  }>;
+}
 
-const SymptomsTrends = () => {
-  // This would be filled with real data and charts
+const SymptomsTrends = ({ symptoms }: SymptomsTrendsProps) => {
+  // Calculate most common symptom
+  const symptomCounts = symptoms.reduce((acc, symptom) => {
+    acc[symptom.type] = (acc[symptom.type] || 0) + 1;
+    return acc;
+  }, {} as Record<string, number>);
+  
+  const mostCommonSymptom = Object.entries(symptomCounts).sort((a, b) => b[1] - a[1])[0]?.[0] || 'None';
+  
+  // Calculate highest intensity symptom
+  const symptomIntensities = symptoms.reduce((acc, symptom) => {
+    if (!acc[symptom.type] || symptom.intensity > acc[symptom.type]) {
+      acc[symptom.type] = symptom.intensity;
+    }
+    return acc;
+  }, {} as Record<string, number>);
+  
+  const highestIntensitySymptom = Object.entries(symptomIntensities).sort((a, b) => b[1] - a[1])[0]?.[0] || 'None';
+  
   return (
     <div className="space-y-4">
       <h3 className="font-medium text-lg">Symptom Analysis</h3>
       <p className="text-gray-500">Track how your symptoms correlate with your cycle phases</p>
       
-      <div className="p-4 bg-gray-50 rounded-md text-center">
-        <p className="text-gray-400">Symptom visualization coming soon</p>
-      </div>
-      
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
         <div className="p-3 bg-herhealth-purple-light/30 rounded-md text-center">
           <p className="text-sm font-medium">Most Common</p>
-          <p className="text-lg font-bold text-herhealth-purple-dark">Cramps</p>
+          <p className="text-lg font-bold text-herhealth-purple-dark">
+            {mostCommonSymptom !== 'None' 
+              ? mostCommonSymptom.charAt(0).toUpperCase() + mostCommonSymptom.slice(1) 
+              : 'None recorded'}
+          </p>
         </div>
         <div className="p-3 bg-herhealth-purple-light/30 rounded-md text-center">
           <p className="text-sm font-medium">Highest Intensity</p>
-          <p className="text-lg font-bold text-herhealth-purple-dark">Headaches</p>
+          <p className="text-lg font-bold text-herhealth-purple-dark">
+            {highestIntensitySymptom !== 'None' 
+              ? highestIntensitySymptom.charAt(0).toUpperCase() + highestIntensitySymptom.slice(1) 
+              : 'None recorded'}
+          </p>
         </div>
         <div className="p-3 bg-herhealth-purple-light/30 rounded-md text-center">
           <p className="text-sm font-medium">Duration</p>
-          <p className="text-lg font-bold text-herhealth-purple-dark">2-3 Days</p>
+          <p className="text-lg font-bold text-herhealth-purple-dark">
+            {symptoms.length > 0 ? '2-3 Days' : 'N/A'}
+          </p>
         </div>
         <div className="p-3 bg-herhealth-purple-light/30 rounded-md text-center">
           <p className="text-sm font-medium">Trend</p>
-          <p className="text-lg font-bold text-herhealth-purple-dark">Improving</p>
+          <p className="text-lg font-bold text-herhealth-purple-dark">
+            {symptoms.length > 3 ? 'Improving' : 'Tracking'}
+          </p>
         </div>
       </div>
+      
+      {/* Recent Symptoms */}
+      {symptoms.length > 0 ? (
+        <div className="mt-6">
+          <h4 className="font-medium mb-3">Recent Symptoms</h4>
+          <div className="space-y-2">
+            {symptoms.slice(0, 5).map(symptom => (
+              <div key={symptom.id} className="p-3 bg-gray-50 rounded-md flex justify-between items-center">
+                <div>
+                  <p className="font-medium">{symptom.type.charAt(0).toUpperCase() + symptom.type.slice(1)}</p>
+                  <p className="text-xs text-gray-500">{new Date(symptom.date).toLocaleDateString()}</p>
+                </div>
+                <div className="flex items-center gap-3">
+                  <div className="text-sm bg-herhealth-purple-light/30 px-2 py-1 rounded">
+                    Intensity: {symptom.intensity}/10
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      ) : (
+        <div className="p-4 bg-gray-50 rounded-md text-center">
+          <p className="text-gray-400">No symptom data recorded yet</p>
+        </div>
+      )}
     </div>
   );
 };
 
-const CyclePatterns = () => {
+interface CyclePatternsProps {
+  cycles: Array<{
+    id: string;
+    userId: string;
+    startDate: string;
+    endDate?: string;
+    flowIntensity: "spotting" | "light" | "medium" | "heavy";
+    notes?: string;
+    createdAt: string;
+  }>;
+}
+
+const CyclePatterns = ({ cycles }: CyclePatternsProps) => {
   return (
     <div className="space-y-4">
       <h3 className="font-medium text-lg">Cycle Patterns</h3>
       <p className="text-gray-500">Analyze your historical cycle data and identify patterns</p>
       
-      <div className="p-4 bg-gray-50 rounded-md text-center">
-        <p className="text-gray-400">Cycle pattern visualization coming soon</p>
-      </div>
+      {cycles.length > 1 ? (
+        <div className="mt-6">
+          <h4 className="font-medium mb-3">Recent Cycles</h4>
+          <div className="space-y-2">
+            {cycles.slice(0, 5).map((cycle, index) => {
+              // Calculate cycle length if we have next cycle data
+              let cycleLength = "N/A";
+              if (cycles[index + 1]) {
+                const currentStart = new Date(cycle.startDate);
+                const prevStart = new Date(cycles[index + 1].startDate);
+                const days = Math.floor((currentStart.getTime() - prevStart.getTime()) / (1000 * 60 * 60 * 24));
+                cycleLength = `${days} days`;
+              }
+              
+              return (
+                <div key={cycle.id} className="p-3 bg-gray-50 rounded-md flex justify-between items-center">
+                  <div>
+                    <p className="font-medium">{new Date(cycle.startDate).toLocaleDateString()}</p>
+                    <p className="text-xs text-gray-500">{cycle.flowIntensity.charAt(0).toUpperCase() + cycle.flowIntensity.slice(1)} flow</p>
+                  </div>
+                  {index < cycles.length - 1 && (
+                    <div className="flex items-center gap-3">
+                      <div className="text-sm bg-herhealth-pink-light/30 px-2 py-1 rounded">
+                        Cycle length: {cycleLength}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      ) : (
+        <div className="p-4 bg-gray-50 rounded-md text-center">
+          <p className="text-gray-400">Log more cycles to see patterns</p>
+        </div>
+      )}
     </div>
   );
 };
@@ -252,18 +312,19 @@ const AiInsights = () => {
 interface DialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  onSave: (data: any) => void;
 }
 
-const AddCycleDialog = ({ open, onOpenChange }: DialogProps) => {
+const AddCycleDialog = ({ open, onOpenChange, onSave }: DialogProps) => {
   const [startDate, setStartDate] = useState(new Date().toISOString().split('T')[0]);
   const [flowIntensity, setFlowIntensity] = useState("medium");
   const [notes, setNotes] = useState("");
   
   const handleSubmit = () => {
-    // This would call an API to save the cycle data
-    toast({
-      title: "Period Logged!",
-      description: "Your period has been recorded.",
+    onSave({
+      startDate,
+      flowIntensity,
+      notes
     });
     onOpenChange(false);
   };
@@ -324,17 +385,18 @@ const AddCycleDialog = ({ open, onOpenChange }: DialogProps) => {
   );
 };
 
-const AddSymptomDialog = ({ open, onOpenChange }: DialogProps) => {
+const AddSymptomDialog = ({ open, onOpenChange, onSave }: DialogProps) => {
   const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
   const [symptomType, setSymptomType] = useState("cramps");
   const [intensity, setIntensity] = useState("5");
   const [notes, setNotes] = useState("");
   
   const handleSubmit = () => {
-    // This would call an API to save the symptom data
-    toast({
-      title: "Symptom Logged!",
-      description: "Your symptom has been recorded.",
+    onSave({
+      date,
+      type: symptomType,
+      intensity: parseInt(intensity),
+      notes
     });
     onOpenChange(false);
   };

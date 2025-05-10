@@ -279,6 +279,57 @@ export const useCycleTracker = () => {
     }
   };
   
+  // Add new function to get cycle statistics
+  const getCycleStatistics = () => {
+    if (cycles.length < 2) return { averageCycleLength: 28, nextPeriodDate: null };
+    
+    // Calculate average cycle length
+    let totalDays = 0;
+    const cycleLengths = [];
+    
+    for (let i = 0; i < cycles.length - 1; i++) {
+      const currentCycleStart = new Date(cycles[i].startDate);
+      const nextCycleStart = new Date(cycles[i + 1].startDate);
+      const daysDiff = Math.floor((currentCycleStart.getTime() - nextCycleStart.getTime()) / (1000 * 60 * 60 * 24));
+      
+      if (daysDiff > 10 && daysDiff < 60) { // Filter out potential errors
+        cycleLengths.push(daysDiff);
+        totalDays += daysDiff;
+      }
+    }
+    
+    const averageCycleLength = cycleLengths.length > 0 
+      ? Math.round(totalDays / cycleLengths.length) 
+      : 28; // Default to 28 if not enough data
+    
+    // Calculate next period date
+    const lastPeriodDate = new Date(cycles[0].startDate);
+    const nextPeriodDate = new Date(lastPeriodDate);
+    nextPeriodDate.setDate(lastPeriodDate.getDate() + averageCycleLength);
+    
+    // Calculate days until next period
+    const today = new Date();
+    const daysUntilNextPeriod = Math.floor((nextPeriodDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+    
+    // Calculate current cycle day
+    const currentCycleDay = Math.floor((today.getTime() - lastPeriodDate.getTime()) / (1000 * 60 * 60 * 24)) + 1;
+    
+    // Determine cycle phase
+    let cyclePhase = "menstrual";
+    if (currentCycleDay > 5) cyclePhase = "follicular";
+    if (currentCycleDay > 10) cyclePhase = "ovulation";
+    if (currentCycleDay > 14) cyclePhase = "luteal";
+    
+    return {
+      averageCycleLength,
+      nextPeriodDate,
+      daysUntilNextPeriod,
+      currentCycleDay,
+      cyclePhase,
+      cycleLengthHistory: cycleLengths
+    };
+  };
+  
   return {
     cycles,
     symptoms,
@@ -286,6 +337,7 @@ export const useCycleTracker = () => {
     isLoadingSymptoms,
     isLoading: isLoadingCycles || isLoadingSymptoms,
     addCycleEntry,
-    addSymptomEntry
+    addSymptomEntry,
+    getCycleStatistics
   };
 };
