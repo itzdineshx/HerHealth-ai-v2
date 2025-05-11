@@ -83,14 +83,14 @@ export const fetchUserProfile = async (userId: string): Promise<User | null> => 
       return {
         id: data.id,
         name: data.name,
-        email: data.email || "",
+        email: "", // Database doesn't have email field, providing empty string
         dob: data.dob,
-        lifeStage: data.life_stage,
+        lifeStage: data.life_stage as 'teen' | 'adult' | 'pregnant' | 'postpartum' | 'perimenopause' | 'menopause',
         location: data.location || undefined,
         privacyPreferences: {
-          dataSharing: data.data_sharing,
-          marketingEmails: data.marketing_emails,
-          researchParticipation: data.research_participation
+          dataSharing: data.data_sharing || false,
+          marketingEmails: data.marketing_emails || false,
+          researchParticipation: data.research_participation || false
         },
         createdAt: data.created_at
       };
@@ -112,7 +112,7 @@ export const updateUserProfile = async (userData: Partial<User>): Promise<boolea
     // Transform to database schema
     const dbData = {
       name: userData.name,
-      email: userData.email,
+      // email is not stored in DB
       dob: userData.dob,
       life_stage: userData.lifeStage,
       location: userData.location,
@@ -170,7 +170,7 @@ export const fetchCycleLogs = async (userId: string): Promise<CycleLog[]> => {
         userId: log.user_id,
         startDate: log.start_date,
         endDate: log.end_date || undefined,
-        flowIntensity: log.flow_intensity,
+        flowIntensity: log.flow_intensity as 'light' | 'medium' | 'heavy' | 'spotting',
         notes: log.notes || undefined
       }));
     }
@@ -184,6 +184,11 @@ export const fetchCycleLogs = async (userId: string): Promise<CycleLog[]> => {
 
 export const createCycleLog = async (cycleData: Omit<CycleLog, 'id'>): Promise<CycleLog | null> => {
   try {
+    // Validate flow intensity
+    if (!['light', 'medium', 'heavy', 'spotting'].includes(cycleData.flowIntensity)) {
+      throw new Error("Invalid flow intensity value");
+    }
+    
     const newLog = {
       id: uuidv4(),
       user_id: cycleData.userId,
@@ -211,7 +216,7 @@ export const createCycleLog = async (cycleData: Omit<CycleLog, 'id'>): Promise<C
         userId: data.user_id,
         startDate: data.start_date,
         endDate: data.end_date || undefined,
-        flowIntensity: data.flow_intensity,
+        flowIntensity: data.flow_intensity as 'light' | 'medium' | 'heavy' | 'spotting',
         notes: data.notes || undefined
       };
     }
@@ -244,7 +249,7 @@ export const fetchSymptomLogs = async (userId: string): Promise<SymptomLog[]> =>
         id: log.id,
         userId: log.user_id,
         date: log.date,
-        type: log.type,
+        type: log.symptom_type, // Map from symptom_type to type
         intensity: log.intensity,
         notes: log.notes || undefined
       }));
@@ -263,7 +268,7 @@ export const createSymptomLog = async (symptomData: Omit<SymptomLog, 'id'>): Pro
       id: uuidv4(),
       user_id: symptomData.userId,
       date: symptomData.date,
-      type: symptomData.type,
+      symptom_type: symptomData.type, // Map from type to symptom_type
       intensity: symptomData.intensity,
       notes: symptomData.notes,
       created_at: new Date().toISOString()
@@ -285,7 +290,7 @@ export const createSymptomLog = async (symptomData: Omit<SymptomLog, 'id'>): Pro
         id: data.id,
         userId: data.user_id,
         date: data.date,
-        type: data.type,
+        type: data.symptom_type, // Map from symptom_type to type
         intensity: data.intensity,
         notes: data.notes || undefined
       };
@@ -319,8 +324,13 @@ export const fetchActivityLogs = async (userId: string): Promise<ActivityLog[]> 
         id: log.id,
         userId: log.user_id,
         date: log.date,
-        type: log.type,
-        metadata: log.metadata || {}
+        type: log.activity_type as 'workout' | 'sleep' | 'nutrition',
+        metadata: {
+          duration: log.duration || undefined,
+          calories: log.calories || undefined,
+          steps: log.steps || undefined,
+          mealDetails: log.meal_details || undefined
+        }
       }));
     }
     
@@ -361,7 +371,7 @@ export const fetchArticles = async (category?: string, limit = 10): Promise<Arti
         title: article.title,
         summary: article.summary,
         content: article.content,
-        category: article.category,
+        category: article.category as 'mental' | 'fitness' | 'nutrition' | 'pregnancy' | 'menopause',
         language: article.language,
         publishDate: article.publish_date,
         imageUrl: article.image_url
@@ -412,7 +422,7 @@ export const fetchCommunityPosts = async (topic?: string, limit = 10): Promise<C
         anonymous: post.anonymous,
         topic: post.topic,
         content: post.content,
-        timestamp: post.timestamp,
+        timestamp: post.created_at, // Map created_at to timestamp
         likes: post.likes,
         replies: post.replies
       }));
@@ -444,7 +454,7 @@ export const createCommunityPost = async (
       anonymous,
       topic,
       content,
-      timestamp: new Date().toISOString(),
+      created_at: new Date().toISOString(),
       likes: 0,
       replies: 0
     };
@@ -467,7 +477,7 @@ export const createCommunityPost = async (
         anonymous: data.anonymous,
         topic: data.topic,
         content: data.content,
-        timestamp: data.timestamp,
+        timestamp: data.created_at, // Map created_at to timestamp
         likes: data.likes,
         replies: data.replies
       };
