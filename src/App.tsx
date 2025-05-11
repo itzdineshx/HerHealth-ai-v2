@@ -22,6 +22,7 @@ import ResourcesPage from "./pages/ResourcesPage";
 import NotificationsPage from "./pages/NotificationsPage";
 import TermsPage from "./pages/TermsPage";
 import UserProfilePage from "./pages/UserProfilePage";
+import AIHealthChatPage from "./pages/AIHealthChatPage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -48,6 +49,7 @@ const App: React.FC = () => (
             <Route path="/notifications" element={<NotificationsPage />} />
             <Route path="/profile" element={<UserProfilePage />} />
             <Route path="/terms" element={<TermsPage />} />
+            <Route path="/ai-health-chat" element={<AIHealthChatPage />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
