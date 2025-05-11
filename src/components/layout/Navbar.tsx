@@ -3,7 +3,29 @@ import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/context/AuthContext";
-import { Menu, X, User, Calendar, Activity, Brain, Heart, Baby, ThermometerSnowflake, LogOut } from "lucide-react";
+import { 
+  Menu, 
+  X, 
+  User, 
+  Calendar, 
+  Activity, 
+  Brain, 
+  Heart, 
+  Baby, 
+  ThermometerSnowflake, 
+  LogOut, 
+  Bell, 
+  BookOpen 
+} from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 export const Navbar = () => {
   const { user, logout } = useAuth();
@@ -57,21 +79,71 @@ export const Navbar = () => {
                 <Link to="/menopause" className={linkClass("/menopause")}>
                   Menopause
                 </Link>
+                <Link to="/resources" className={linkClass("/resources")}>
+                  Resources
+                </Link>
+                <Link to="/notifications" className={linkClass("/notifications")}>
+                  <Bell className="h-4 w-4" />
+                </Link>
                 
-                <div className="ml-3 relative">
-                  <Button 
-                    variant="ghost" 
-                    className="flex items-center gap-2 hover:bg-herhealth-pink-light"
-                    onClick={() => logout()}
-                  >
-                    <LogOut className="h-4 w-4" />
-                    <span>Logout</span>
-                  </Button>
+                <div className="relative ml-3">
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="ghost" className="rounded-full p-1 h-9 w-9">
+                        <Avatar>
+                          <AvatarImage src="https://img.icons8.com/?size=100&id=A2cvMrJpftoK&format=png&color=000000" alt="Profile" />
+                          <AvatarFallback>{user?.name?.charAt(0) || "U"}</AvatarFallback>
+                        </Avatar>
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                      <DropdownMenuLabel>My Account</DropdownMenuLabel>
+                      <DropdownMenuItem asChild>
+                        <Link to="/profile" className="flex items-center cursor-pointer w-full">
+                          <User className="mr-2 h-4 w-4" />
+                          Profile Settings
+                        </Link>
+                      </DropdownMenuItem>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem onClick={() => logout()} className="cursor-pointer">
+                        <LogOut className="mr-2 h-4 w-4" />
+                        Logout
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
                 </div>
               </div>
               
               {/* Mobile menu button */}
-              <div className="flex items-center md:hidden">
+              <div className="flex items-center md:hidden space-x-2">
+                <Link to="/notifications" className={`p-2 rounded-md ${isActiveRoute("/notifications") ? "bg-herhealth-pink-light text-herhealth-pink-dark" : ""}`}>
+                  <Bell className="h-5 w-5" />
+                </Link>
+                
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="ghost" className="rounded-full p-1 h-9 w-9">
+                      <Avatar>
+                        <AvatarImage src="https://img.icons8.com/?size=100&id=A2cvMrJpftoK&format=png&color=000000" alt="Profile" />
+                        <AvatarFallback>{user?.name?.charAt(0) || "U"}</AvatarFallback>
+                      </Avatar>
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
+                    <DropdownMenuItem asChild>
+                      <Link to="/profile" className="flex items-center cursor-pointer w-full">
+                        <User className="mr-2 h-4 w-4" />
+                        Profile Settings
+                      </Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem onClick={() => logout()} className="cursor-pointer">
+                      <LogOut className="mr-2 h-4 w-4" />
+                      Logout
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+                
                 <button
                   className="p-2 rounded-md text-gray-600 hover:text-gray-900 hover:bg-gray-100"
                   onClick={toggleMenu}
@@ -153,6 +225,14 @@ export const Navbar = () => {
             >
               <ThermometerSnowflake className="h-5 w-5" />
               Menopause
+            </Link>
+            <Link
+              to="/resources"
+              className={`block px-3 py-2 rounded-md text-base font-medium ${isActiveRoute("/resources") ? "bg-herhealth-pink-light text-herhealth-pink-dark" : "hover:bg-herhealth-pink-light/50"} flex items-center gap-3`}
+              onClick={() => setIsMenuOpen(false)}
+            >
+              <BookOpen className="h-5 w-5" />
+              Resources
             </Link>
             <button
               className="w-full text-left block px-3 py-2 rounded-md text-base font-medium hover:bg-herhealth-pink-light/50 flex items-center gap-3"

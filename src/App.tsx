@@ -27,36 +27,34 @@ import NotFound from "./pages/NotFound";
 const queryClient = new QueryClient();
 
 const App: React.FC = () => (
-  <React.Fragment>
-    <QueryClientProvider client={queryClient}>
-      <TooltipProvider>
-        <AuthProvider>
-          <Toaster />
-          <Sonner />
-          <BrowserRouter>
-            <Routes>
-              <Route path="/" element={<HomePage />} />
-              <Route path="/login" element={<LoginPage />} />
-              <Route path="/signup" element={<SignupPage />} />
-              <Route path="/onboarding" element={<OnboardingPage />} />
-              <Route path="/dashboard" element={<DashboardPage />} />
-              <Route path="/cycle" element={<CycleTrackerPage />} />
-              <Route path="/wellness" element={<WellnessHubPage />} />
-              <Route path="/mental-health" element={<MentalHealthPage />} />
-              <Route path="/pregnancy" element={<PregnancyPage />} />
-              <Route path="/menopause" element={<MenopausePage />} />
-              <Route path="/resources" element={<ResourcesPage />} />
-              <Route path="/notifications" element={<NotificationsPage />} />
-              <Route path="/profile" element={<UserProfilePage />} />
-              <Route path="/terms" element={<TermsPage />} />
-              {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-              <Route path="*" element={<NotFound />} />
-            </Routes>
-          </BrowserRouter>
-        </AuthProvider>
-      </TooltipProvider>
-    </QueryClientProvider>
-  </React.Fragment>
+  <QueryClientProvider client={queryClient}>
+    <TooltipProvider>
+      <AuthProvider>
+        <Toaster />
+        <Sonner />
+        <BrowserRouter>
+          <Routes>
+            <Route path="/" element={<HomePage />} />
+            <Route path="/login" element={<LoginPage />} />
+            <Route path="/signup" element={<SignupPage />} />
+            <Route path="/onboarding" element={<OnboardingPage />} />
+            <Route path="/dashboard" element={<DashboardPage />} />
+            <Route path="/cycle" element={<CycleTrackerPage />} />
+            <Route path="/wellness" element={<WellnessHubPage />} />
+            <Route path="/mental-health" element={<MentalHealthPage />} />
+            <Route path="/pregnancy" element={<PregnancyPage />} />
+            <Route path="/menopause" element={<MenopausePage />} />
+            <Route path="/resources" element={<ResourcesPage />} />
+            <Route path="/notifications" element={<NotificationsPage />} />
+            <Route path="/profile" element={<UserProfilePage />} />
+            <Route path="/terms" element={<TermsPage />} />
+            {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </BrowserRouter>
+      </AuthProvider>
+    </TooltipProvider>
+  </QueryClientProvider>
 );
 
 export default App;

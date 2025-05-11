@@ -1,4 +1,3 @@
-
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 import { 
@@ -15,6 +14,7 @@ import {
 } from "lucide-react";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { motion } from "framer-motion";
+import { useAuth } from "@/context/AuthContext";
 
 // Animation variants
 const fadeIn = {
@@ -33,6 +33,8 @@ const staggerContainer = {
 };
 
 const HomePage = () => {
+  const { user, isAuthenticated } = useAuth();
+  
   return (
     <AppLayout>
       {/* Hero Section */}
@@ -46,11 +48,19 @@ const HomePage = () => {
             className="flex flex-col md:flex-row gap-8 items-center"
           >
             <div className="md:w-1/2">
-              <div className="bg-white/30 backdrop-blur-sm p-2 rounded-lg inline-block mb-4">
-                <span className="text-herhealth-pink-dark font-medium text-sm px-3 py-1 rounded-full bg-herhealth-pink-light/50">
-                  Your personal wellness companion
-                </span>
-              </div>
+              {isAuthenticated && user ? (
+                <div className="bg-white/30 backdrop-blur-sm p-2 rounded-lg inline-block mb-4">
+                  <span className="text-herhealth-pink-dark font-medium text-sm px-3 py-1 rounded-full bg-herhealth-pink-light/50">
+                    Welcome back, {user.name}!
+                  </span>
+                </div>
+              ) : (
+                <div className="bg-white/30 backdrop-blur-sm p-2 rounded-lg inline-block mb-4">
+                  <span className="text-herhealth-pink-dark font-medium text-sm px-3 py-1 rounded-full bg-herhealth-pink-light/50">
+                    Your personal wellness companion
+                  </span>
+                </div>
+              )}
               <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight text-gray-900 mb-6">
                 Your Complete <span className="text-herhealth-pink-dark">Women's Wellness</span> Journey
               </h1>
@@ -58,17 +68,28 @@ const HomePage = () => {
                 HerHealth is your personalized wellness companion for every life stage. Track your cycle, monitor symptoms, connect with experts, and join a supportive community.
               </p>
               <div className="flex flex-col sm:flex-row gap-4">
-                <Link to="/signup">
-                  <Button className="bg-herhealth-pink-dark hover:bg-herhealth-pink text-white text-lg px-8 py-6 rounded-full shadow-lg hover:shadow-xl transition-all group">
-                    Start Your Journey
-                    <ArrowRight className="ml-2 h-5 w-5 transition-transform group-hover:translate-x-1" />
-                  </Button>
-                </Link>
-                <Link to="/login">
-                  <Button variant="outline" className="text-lg px-8 py-6 rounded-full border-2 hover:bg-gray-50 transition-all">
-                    Sign In
-                  </Button>
-                </Link>
+                {isAuthenticated ? (
+                  <Link to="/dashboard">
+                    <Button className="bg-herhealth-pink-dark hover:bg-herhealth-pink text-white text-lg px-8 py-6 rounded-full shadow-lg hover:shadow-xl transition-all group">
+                      Go to Dashboard
+                      <ArrowRight className="ml-2 h-5 w-5 transition-transform group-hover:translate-x-1" />
+                    </Button>
+                  </Link>
+                ) : (
+                  <>
+                    <Link to="/signup">
+                      <Button className="bg-herhealth-pink-dark hover:bg-herhealth-pink text-white text-lg px-8 py-6 rounded-full shadow-lg hover:shadow-xl transition-all group">
+                        Start Your Journey
+                        <ArrowRight className="ml-2 h-5 w-5 transition-transform group-hover:translate-x-1" />
+                      </Button>
+                    </Link>
+                    <Link to="/login">
+                      <Button variant="outline" className="text-lg px-8 py-6 rounded-full border-2 hover:bg-gray-50 transition-all">
+                        Sign In
+                      </Button>
+                    </Link>
+                  </>
+                )}
               </div>
               
               <div className="mt-8 flex items-center gap-4">
