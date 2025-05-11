@@ -8,8 +8,10 @@ export const Footer = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex flex-col md:flex-row justify-between items-center">
           <div className="flex items-center mb-4 md:mb-0">
-            <span className="text-xl font-bold text-herhealth-pink-dark">Her</span>
-            <span className="text-xl font-bold text-herhealth-green-dark">Health</span>
+            <Link to="/" className="flex items-center">
+              <span className="text-xl font-bold text-herhealth-pink-dark">Her</span>
+              <span className="text-xl font-bold text-herhealth-green-dark">Health</span>
+            </Link>
           </div>
           
           <div className="flex flex-col md:flex-row items-center gap-4 md:gap-8">

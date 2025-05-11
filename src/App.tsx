@@ -4,7 +4,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider } from "@/context/AuthContext";
 
 // Pages
@@ -24,6 +24,8 @@ import TermsPage from "./pages/TermsPage";
 import UserProfilePage from "./pages/UserProfilePage";
 import AIHealthChatPage from "./pages/AIHealthChatPage";
 import NotFound from "./pages/NotFound";
+import PrivacyPolicyPage from "./pages/PrivacyPolicyPage";
+import ContactPage from "./pages/ContactPage";
 
 const queryClient = new QueryClient();
 
@@ -50,6 +52,10 @@ const App: React.FC = () => (
             <Route path="/profile" element={<UserProfilePage />} />
             <Route path="/terms" element={<TermsPage />} />
             <Route path="/ai-health-chat" element={<AIHealthChatPage />} />
+            <Route path="/privacy" element={<PrivacyPolicyPage />} />
+            <Route path="/contact" element={<ContactPage />} />
+            {/* Redirect /index.html to home page */}
+            <Route path="/index.html" element={<Navigate to="/" replace />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
