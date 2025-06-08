@@ -15,7 +15,8 @@ import {
   ThermometerSnowflake, 
   LogOut, 
   Bell, 
-  BookOpen 
+  BookOpen,
+  MessageSquare 
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -82,6 +83,9 @@ export const Navbar = () => {
                 <Link to="/resources" className={linkClass("/resources")}>
                   Resources
                 </Link>
+                <Link to="/gemini-chat" className={linkClass("/gemini-chat")}>
+                  <MessageSquare className="h-4 w-4" />
+                </Link>
                 <Link to="/notifications" className={linkClass("/notifications")}>
                   <Bell className="h-4 w-4" />
                 </Link>
@@ -116,6 +120,9 @@ export const Navbar = () => {
               
               {/* Mobile menu button */}
               <div className="flex items-center md:hidden space-x-2">
+                <Link to="/gemini-chat" className={`p-2 rounded-md ${isActiveRoute("/gemini-chat") ? "bg-herhealth-pink-light text-herhealth-pink-dark" : ""}`}>
+                  <MessageSquare className="h-5 w-5" />
+                </Link>
                 <Link to="/notifications" className={`p-2 rounded-md ${isActiveRoute("/notifications") ? "bg-herhealth-pink-light text-herhealth-pink-dark" : ""}`}>
                   <Bell className="h-5 w-5" />
                 </Link>
@@ -233,6 +240,14 @@ export const Navbar = () => {
             >
               <BookOpen className="h-5 w-5" />
               Resources
+            </Link>
+            <Link
+              to="/gemini-chat"
+              className={`block px-3 py-2 rounded-md text-base font-medium ${isActiveRoute("/gemini-chat") ? "bg-herhealth-pink-light text-herhealth-pink-dark" : "hover:bg-herhealth-pink-light/50"} flex items-center gap-3`}
+              onClick={() => setIsMenuOpen(false)}
+            >
+              <MessageSquare className="h-5 w-5" />
+              Gemini Chat
             </Link>
             <button
               className="w-full text-left block px-3 py-2 rounded-md text-base font-medium hover:bg-herhealth-pink-light/50 flex items-center gap-3"

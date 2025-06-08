@@ -23,6 +23,7 @@ import NotificationsPage from "./pages/NotificationsPage";
 import TermsPage from "./pages/TermsPage";
 import UserProfilePage from "./pages/UserProfilePage";
 import AIHealthChatPage from "./pages/AIHealthChatPage";
+import GeminiChatPage from "./pages/GeminiChatPage";
 import NotFound from "./pages/NotFound";
 import PrivacyPolicyPage from "./pages/PrivacyPolicyPage";
 import ContactPage from "./pages/ContactPage";
@@ -52,6 +53,7 @@ const App: React.FC = () => (
             <Route path="/profile" element={<UserProfilePage />} />
             <Route path="/terms" element={<TermsPage />} />
             <Route path="/ai-health-chat" element={<AIHealthChatPage />} />
+            <Route path="/gemini-chat" element={<GeminiChatPage />} />
             <Route path="/privacy" element={<PrivacyPolicyPage />} />
             <Route path="/contact" element={<ContactPage />} />
             {/* Redirect /index.html to home page */}
